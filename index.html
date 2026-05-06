@@ -1,316 +1,513 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AccuRater | AI Evaluation Training</title>
     <!-- Font Awesome 6 (Free CDN) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
     <style>
-        :root {
-            --primary: #1e3a8a;
-            --primary-light: #2563eb;
-            --success: #10b981;
-            --danger: #dc2626;
-            --warning: #f59e0b;
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #1e293b;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --radius: 12px;
-            --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
-            --shadow-hover: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding: 24px;
-            line-height: 1.5;
-            transition: background 0.3s, color 0.3s;
-        }
-        body.rtl { direction: rtl; }
-        body.paused {
-            pointer-events: none;
-            opacity: 0.7;
-        }
-        body.paused #pause-btn,
-        body.paused #evidence-box { pointer-events: auto; opacity: 1; }
+      :root {
+        --primary: #1e3a8a;
+        --primary-light: #2563eb;
+        --success: #10b981;
+        --danger: #dc2626;
+        --warning: #f59e0b;
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --text: #1e293b;
+        --text-muted: #64748b;
+        --border: #e2e8f0;
+        --radius: 12px;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+        --shadow-hover:
+          0 10px 25px -5px rgba(0, 0, 0, 0.1),
+          0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family:
+          "Inter",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: var(--border);
+        color: var(--text);
+        padding: 24px;
+        line-height: 1.5;
+        transition:
+          background 0.3s,
+          color 0.3s;
+      }
+      body.rtl {
+        direction: rtl;
+      }
+      body.paused {
+        pointer-events: none;
+        opacity: 0.7;
+      }
+      body.paused #pause-btn,
+      body.paused #evidence-box {
+        pointer-events: auto;
+        opacity: 1;
+      }
 
-        .header, .card {
-            background: var(--card);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 20px;
-        }
-        .btn {
-            cursor: pointer;
-            border: 1px solid var(--border);
-            font-weight: 500;
-            padding: 10px 18px;
-            border-radius: 8px;
-            background: var(--card);
-            color: var(--text);
-            font-size: 0.9rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.15s;
-            white-space: nowrap;
-            font-family: inherit;
-        }
-        .btn i { font-size: 1rem; }
-        .btn:hover {
-            background: #f1f5f9;
-            border-color: #cbd5e1;
-        }
-        .btn-primary {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: white;
-        }
-        .btn-primary:hover { background: var(--primary-light); }
-        .btn-success {
-            background: var(--success);
-            border-color: var(--success);
-            color: white;
-        }
-        .btn-danger {
-            background: var(--danger);
-            border-color: var(--danger);
-            color: white;
-        }
-        .input-field, select, textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            background: white;
-            transition: border-color 0.15s;
-        }
-        .input-field:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary-light);
-            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
-        }
-        .flex-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        .container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 420px; gap: 24px; }
+      #evidence-box:empty {
+        border-color: #f59e0b;
+        background: #fffbeb;
+      }
 
-        #response-area {
-            background: #f8fafc;
-            border: 1px solid var(--border);
-            padding: 16px;
-            border-radius: 8px;
-            min-height: 220px;
-            max-height: 440px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            line-height: 1.7;
-            font-size: 1rem;
-            user-select: text;
+      .header,
+      .card {
+        background: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 24px;
+        margin-bottom: 24px;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 20px;
+      }
+      .btn {
+        cursor: pointer;
+        border: 1px solid var(--border);
+        font-weight: 500;
+        padding: 10px 18px;
+        border-radius: 8px;
+        background: var(--card);
+        color: var(--text);
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.15s;
+        white-space: nowrap;
+        font-family: inherit;
+      }
+      .btn i {
+        font-size: 1rem;
+      }
+      .btn:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+      }
+      .btn-primary {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+      }
+      .btn-primary:hover {
+        background: var(--primary-light);
+      }
+      .btn-success {
+        background: var(--success);
+        border-color: var(--success);
+        color: white;
+      }
+      .btn-danger {
+        background: var(--danger);
+        border-color: var(--danger);
+        color: white;
+      }
+      .input-field,
+      select,
+      textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        background: white;
+        transition: border-color 0.15s;
+      }
+      .input-field:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--primary-light);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+      .flex-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 420px;
+        gap: 24px;
+      }
+
+      #response-area {
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        padding: 16px;
+        border-radius: 8px;
+        min-height: 220px;
+        max-height: 440px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        line-height: 1.7;
+        font-size: 1rem;
+        user-select: text;
+      }
+      #prompt-area {
+        background: #eff6ff;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-style: italic;
+        color: #1e3a8a;
+        border-left: 4px solid var(--primary);
+        background: antiquewhite;
+      }
+      .rationale-box {
+        background: #1e293b;
+        color: #34d399;
+        padding: 16px;
+        border-radius: 8px;
+        font-family: "JetBrains Mono", "Fira Code", monospace;
+        white-space: pre-wrap;
+        min-height: 80px;
+        font-size: 0.9rem;
+        line-height: 1.6;
+      }
+      .issue-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin: 4px;
+      }
+      .issue-actions button {
+        background: none;
+        border: none;
+        color: #991b1b;
+        cursor: pointer;
+        font-size: 1rem;
+        padding: 0 4px;
+        line-height: 1;
+      }
+      .timer-big {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--danger);
+        background: #fee2e2;
+        padding: 6px 18px;
+        border-radius: 8px;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .timer-big i {
+        font-size: 1.2rem;
+      }
+      .warning-banner {
+        background: #fff3cd;
+        color: #856404;
+        padding: 12px;
+        border-radius: 8px;
+        margin: 12px 0;
+        font-weight: 500;
+        border: 1px solid #ffc107;
+      }
+      .score-badge {
+        font-weight: 600;
+        padding: 6px 16px;
+        border-radius: 5px;
+        background: #d1fae5;
+        color: #065f46;
+        font-size: 1rem;
+      }
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(2px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      .modal-content {
+        background: white;
+        border-radius: var(--radius);
+        padding: 32px;
+        max-width: 850px;
+        width: 90%;
+        max-height: 85vh;
+        overflow-y: auto;
+        text-align: left;
+        box-shadow: var(--shadow-hover);
+      }
+      #progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        margin: 8px 0 20px;
+        overflow: hidden;
+      }
+      #progress-fill {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 4px;
+        width: 0%;
+        transition: width 0.3s;
+      }
+      .review-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+      }
+      .review-table th,
+      .review-table td {
+        border: 1px solid #e2e8f0;
+        padding: 10px 12px;
+        text-align: left;
+        vertical-align: top;
+        font-size: 0.9rem;
+      }
+      .review-table th {
+        background: #f8fafc;
+        font-weight: 600;
+      }
+      .matched {
+        color: #065f46;
+        font-weight: 600;
+      }
+      .unmatched {
+        color: #b91c1c;
+      }
+      .extra-issue {
+        background: #fff3cd;
+      }
+      .task-list-item {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.1s;
+      }
+      .task-list-item:hover {
+        background: #f8fafc;
+      }
+      .task-list-item:last-child {
+        border-bottom: none;
+      }
+      .logo-text {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .intro-logo {
+        margin-bottom: 20px;
+      }
+      .intro-logo img {
+        max-width: 250px;
+        height: auto;
+      }
+      .recent-sessions {
+        margin-top: 24px;
+        text-align: left;
+      }
+      .recent-sessions h3 {
+        margin-bottom: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+      .session-entry {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        margin-bottom: 8px;
+      }
+      .session-entry:hover {
+        background: #f8fafc;
+      }
+      .how-it-works {
+        margin: 32px 0;
+        text-align: left;
+      }
+      .how-it-works h3 {
+        margin-bottom: 12px;
+        font-weight: 600;
+      }
+      .how-it-works ol {
+        list-style-position: inside;
+        line-height: 1.8;
+      }
+      @media (max-width: 800px) {
+        .container {
+          grid-template-columns: 1fr;
         }
-        #prompt-area {
-            background: #eff6ff;
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            font-style: italic;
-            color: #1e3a8a;
-            border-left: 4px solid var(--primary);
-        }
-        .rationale-box {
-            background: #1e293b;
-            color: #34d399;
-            padding: 16px;
-            border-radius: 8px;
-            font-family: 'JetBrains Mono', 'Fira Code', monospace;
-            white-space: pre-wrap;
-            min-height: 80px;
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-        .issue-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            margin: 4px;
-        }
-        .issue-actions button {
-            background: none;
-            border: none;
-            color: #991b1b;
-            cursor: pointer;
-            font-size: 1rem;
-            padding: 0 4px;
-            line-height: 1;
-        }
-        .timer-big {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--danger);
-            background: #fee2e2;
-            padding: 6px 18px;
-            border-radius: 8px;
-            letter-spacing: 0.5px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .timer-big i { font-size: 1.2rem; }
-        .warning-banner {
-            background: #fff3cd;
-            color: #856404;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 12px 0;
-            font-weight: 500;
-            border: 1px solid #ffc107;
-        }
-        .score-badge {
-            font-weight: 600;
-            padding: 6px 16px;
-            border-radius: 20px;
-            background: #d1fae5;
-            color: #065f46;
-            font-size: 0.9rem;
-        }
-        .modal-overlay {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(2px);
-            display:flex; justify-content:center; align-items:center; z-index:1000;
-        }
-        .modal-content {
-            background: white;
-            border-radius: var(--radius);
-            padding: 32px;
-            max-width: 850px;
-            width:90%;
-            max-height:85vh;
-            overflow-y:auto;
-            text-align: left;
-            box-shadow: var(--shadow-hover);
-        }
-        #progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            margin: 8px 0 20px;
-            overflow: hidden;
-        }
-        #progress-fill {
-            height: 100%;
-            background: var(--primary);
-            border-radius: 4px;
-            width: 0%;
-            transition: width 0.3s;
-        }
-        .review-table { width:100%; border-collapse:collapse; margin-top:16px; }
-        .review-table th, .review-table td {
-            border:1px solid #e2e8f0; padding:10px 12px; text-align:left; vertical-align:top; font-size:0.9rem;
-        }
-        .review-table th { background:#f8fafc; font-weight:600; }
-        .matched { color: #065f46; font-weight:600; }
-        .unmatched { color: #b91c1c; }
-        .extra-issue { background: #fff3cd; }
-        .task-list-item {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background 0.1s;
-        }
-        .task-list-item:hover { background: #f8fafc; }
-        .task-list-item:last-child { border-bottom: none; }
-        .logo-text { font-size: 1.6rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-        .intro-logo { margin-bottom: 20px; }
-        .intro-logo img { max-width: 250px; height: auto; }
-        .recent-sessions { margin-top: 24px; text-align: left; }
-        .recent-sessions h3 { margin-bottom: 12px; font-size: 1rem; font-weight: 600; }
-        .session-entry {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px; border:1px solid var(--border); border-radius:8px; margin-bottom:8px;
-        }
-        .session-entry:hover { background: #f8fafc; }
-        .how-it-works { margin: 32px 0; text-align: left; }
-        .how-it-works h3 { margin-bottom: 12px; font-weight: 600; }
-        .how-it-works ol { list-style-position: inside; line-height: 1.8; }
-        @media (max-width: 800px) { .container { grid-template-columns: 1fr; } }
+      }
+
+      #response-area::selection {
+        background: #fef08a;
+        color: #1e293b;
+      }
     </style>
-</head>
-<body>
-
-<!-- INTRO SCREEN -->
-<div id="intro-screen" class="card" style="max-width:700px; margin:40px auto; text-align:center; padding: 40px 32px;">
-    <div class="intro-logo">
-        <img src="https://raw.githubusercontent.com/ithubeg/ai-evaluator-training/refs/heads/main/AccuRater-logo.png" alt="AccuRater" style="max-width:250px; height:auto;">
-    </div>
-    <p style="font-size:1.2rem; color:var(--text-muted); max-width:480px; margin:0 auto 20px;">
+  </head>
+  <body>
+    <!-- INTRO SCREEN -->
+    <div
+      id="intro-screen"
+      class="card"
+      style="
+        max-width: 700px;
+        margin: 40px auto;
+        text-align: center;
+        padding: 40px 32px;
+      "
+    >
+      <div class="intro-logo">
+        <img
+          src="https://raw.githubusercontent.com/ithubeg/ai-evaluator-training/refs/heads/main/AccuRater-logo.png"
+          alt="AccuRater"
+          style="max-width: 250px; height: auto"
+        />
+      </div>
+      <p
+        style="
+          font-size: 1.2rem;
+          color: var(--text-muted);
+          max-width: 480px;
+          margin: 0 auto 20px;
+        "
+      >
         Structured Evaluation. Measurable Accuracy.
-    </p>
-    <div class="flex-row" style="justify-content:center; margin:20px 0;">
-        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-            <input type="radio" name="mode" value="training" checked> Training mode
+      </p>
+      <div class="flex-row" style="justify-content: center; margin: 20px 0">
+        <label
+          style="display: flex; align-items: center; gap: 8px; cursor: pointer"
+        >
+          <input type="radio" name="mode" value="training" checked /> Training
+          mode
         </label>
-        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-            <input type="radio" name="mode" value="test"> Test mode
+        <label
+          style="display: flex; align-items: center; gap: 8px; cursor: pointer"
+        >
+          <input type="radio" name="mode" value="test" /> Test mode
         </label>
-    </div>
-    <input type="file" id="training-file" accept=".json" class="input-field" style="width:auto; display:inline-block; margin:16px 0;">
-    <p style="margin-top:8px;">
-        <button id="load-sample-btn" class="btn btn-primary"><i class="fas fa-download"></i> Load Example</button>
-    </p>
+      </div>
+      <input
+        type="file"
+        id="training-file"
+        accept=".json"
+        class="input-field"
+        style="width: auto; display: inline-block; margin: 16px 0"
+      />
+      <p style="margin-top: 8px">
+        <button id="load-sample-btn" class="btn btn-primary">
+          <i class="fas fa-download"></i> Load Example
+        </button>
+      </p>
 
-    <!-- How it works -->
-    <div class="how-it-works">
+      <!-- How it works -->
+      <div class="how-it-works">
         <h3>How It Works</h3>
         <ol>
-            <li><strong>Upload a JSON training pack</strong> that contains AI responses and expected issues.</li>
-            <li><strong>For each task</strong>, read the prompt and the model's response.</li>
-            <li><strong>Highlight the exact problematic part</strong> in the response – it becomes your <em>Evidence</em>.</li>
-            <li><strong>Choose the Behavior</strong> (e.g. Factuality Error), <strong>Explanation</strong> (e.g. Incorrect Fact), and <strong>Impact</strong> (e.g. Trust Erosion).</li>
-            <li><strong>Add the issue</strong> – your evaluation will be shown instantly.</li>
-            <li><strong>Review your score</strong> and compare with the expected answers to learn where you can improve.</li>
+          <li>
+            <strong>Upload a JSON training pack</strong> that contains AI
+            responses and expected issues.
+          </li>
+          <li>
+            <strong>For each task</strong>, read the prompt and the model's
+            response.
+          </li>
+          <li>
+            <strong>Highlight the exact problematic part</strong> in the
+            response – it becomes your <em>Evidence</em>.
+          </li>
+          <li>
+            <strong>Choose the Behavior</strong> (e.g. Factuality Error),
+            <strong>Explanation</strong> (e.g. Incorrect Fact), and
+            <strong>Impact</strong> (e.g. Trust Erosion).
+          </li>
+          <li>
+            <strong>Add the issue</strong> – your evaluation will be shown
+            instantly.
+          </li>
+          <li>
+            <strong>Review your score</strong> and compare with the expected
+            answers to learn where you can improve.
+          </li>
         </ol>
-        <p style="margin-top:12px; font-size:0.95rem;">Need your own training set? <a href="#" id="guide-link" style="color:var(--primary);">Learn how to create a JSON file</a>.</p>
-    </div>
+        <p style="margin-top: 12px; font-size: 0.95rem">
+          Need your own training set?
+          <a href="#" id="guide-link" style="color: var(--primary)"
+            >Learn how to create a JSON file</a
+          >.
+        </p>
+      </div>
 
-    <!-- Recent Sessions -->
-    <div id="recent-sessions-container" class="recent-sessions" style="display:none;">
+      <!-- Recent Sessions -->
+      <div
+        id="recent-sessions-container"
+        class="recent-sessions"
+        style="display: none"
+      >
         <h3><i class="fas fa-history"></i> Recent Sessions</h3>
         <div id="recent-sessions-list"></div>
+      </div>
     </div>
-</div>
 
-<!-- GUIDE MODAL -->
-<div id="guide-modal" class="modal-overlay" style="display:none;">
-    <div class="modal-content" style="max-width:600px;">
-        <span style="float:right; cursor:pointer; font-size:1.5rem;" onclick="closeModal('guide-modal')">&times;</span>
+    <!-- GUIDE MODAL -->
+    <div id="guide-modal" class="modal-overlay" style="display: none">
+      <div class="modal-content" style="max-width: 600px">
+        <span
+          style="float: right; cursor: pointer; font-size: 1.5rem"
+          onclick="closeModal('guide-modal')"
+          >&times;</span
+        >
         <h2>Creating Your Own JSON Training File</h2>
-        <p>Your JSON must contain a <code>config</code> block and a <code>tasks</code> array, as shown below:</p>
-        <pre style="background:#f1f5f9; padding:16px; border-radius:8px; overflow-x:auto; font-size:0.85rem;">
+        <p>
+          Your JSON must contain a <code>config</code> block and a
+          <code>tasks</code> array, as shown below:
+        </p>
+        <pre
+          style="
+            background: #f1f5f9;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+          "
+        >
 {
   "config": {
     "session_time_limit_seconds": 900,
@@ -332,114 +529,248 @@
       ]
     }
   ]
-}</pre>
-        <p style="margin-top:12px;">Download the example file as a starting point. For custom taxonomies, define your own behaviors and impacts under <code>config</code>.</p>
-        <button class="btn btn-primary" onclick="closeModal('guide-modal')">Got it</button>
+}</pre
+        >
+        <p style="margin-top: 12px">
+          Download the example file as a starting point. For custom taxonomies,
+          define your own behaviors and impacts under <code>config</code>.
+        </p>
+        <button class="btn btn-primary" onclick="closeModal('guide-modal')">
+          Got it
+        </button>
+      </div>
     </div>
-</div>
 
-<!-- WORK AREA -->
-<div id="work-area" style="display:none;">
-    <div class="header">
+    <!-- WORK AREA -->
+    <div id="work-area" style="display: none">
+      <div class="header">
         <div class="flex-row">
-            <div class="logo-text">
-                <img src="https://raw.githubusercontent.com/ithubeg/ai-evaluator-training/refs/heads/main/AccuRater-logo.png" alt="AccuRater" style="height:auto; width:250px;">
-            </div>
-            <span id="mode-title" style="font-weight:500; color:var(--text-muted);">Training</span>
-            <span id="session-timer" class="timer-big">
-                <i class="fas fa-clock"></i>
-                <span id="timer-text">00:00</span>
-            </span>
-            <span id="task-score-badge" class="score-badge" style="display:none;">Score: —</span>
+          <div class="logo-text">
+            <img
+              src="https://raw.githubusercontent.com/ithubeg/ai-evaluator-training/refs/heads/main/AccuRater-logo.png"
+              alt="AccuRater"
+              style="height: auto; width: 250px"
+            />
+          </div>
+          <span
+            id="mode-title"
+            style="font-weight: 500; color: var(--text-muted)"
+            >Training</span
+          >
+          <span id="session-timer" class="timer-big">
+            <i class="fas fa-clock"></i>
+            <span id="timer-text">00:00</span>
+          </span>
+          <span id="task-score-badge" class="score-badge" style="display: none"
+            >Score: —</span
+          >
         </div>
         <div class="flex-row">
-            <select id="lang-switcher" class="input-field" style="width:auto;">
-                <option value="en">English</option>
-                <option value="ar">العربية</option>
-            </select>
-            <button id="home-btn" class="btn"><i class="fas fa-home"></i> Home</button>
-            <button id="history-btn" class="btn"><i class="fas fa-list-check"></i> History</button>
-            <button id="prev-btn" class="btn"><i class="fas fa-chevron-left"></i> Previous</button>
-            <span id="item-counter" style="font-weight:500;">0 / 0</span>
-            <button id="next-btn" class="btn">Next <i class="fas fa-chevron-right"></i></button>
-            <button id="score-btn" class="btn btn-primary"><i class="fas fa-chart-bar"></i> Show Score</button>
-            <button id="export-txt-btn" class="btn btn-primary" style="display:none;"><i class="fas fa-file-export"></i> Export Text</button>
+          <select id="lang-switcher" class="input-field" style="width: auto">
+            <option value="en">English</option>
+            <option value="ar">العربية</option>
+          </select>
+          <button id="home-btn" class="btn">
+            <i class="fas fa-home"></i> Home
+          </button>
+          <button id="history-btn" class="btn">
+            <i class="fas fa-list-check"></i> History
+          </button>
+          <button id="prev-btn" class="btn">
+            <i class="fas fa-chevron-left"></i> Previous
+          </button>
+          <span id="item-counter" style="font-weight: 500">0 / 0</span>
+          <button id="next-btn" class="btn">
+            Next <i class="fas fa-chevron-right"></i>
+          </button>
+          <button id="score-btn" class="btn btn-primary">
+            <i class="fas fa-chart-bar"></i> Show Score
+          </button>
+          <button
+            id="export-txt-btn"
+            class="btn btn-primary"
+            style="display: none"
+          >
+            <i class="fas fa-file-export"></i> Export Text
+          </button>
         </div>
+      </div>
+
+      <div id="progress-bar"><div id="progress-fill"></div></div>
+
+      <div class="container">
+        <div>
+          <div class="card">
+            <div id="prompt-area" style="display: none"></div>
+            <h2
+              id="lbl-response"
+              style="margin-bottom: 12px; font-size: 1.1rem; font-weight: 600"
+            >
+              Response Content
+            </h2>
+            <div id="response-area"></div>
+            <small
+              style="color: var(--text-muted); display: block; margin-top: 8px"
+              >Select the problematic text to capture evidence.</small
+            >
+          </div>
+          <div class="card">
+            <h2
+              id="lbl-rationale"
+              style="margin-bottom: 12px; font-size: 1.1rem; font-weight: 600"
+            >
+              Your Issues
+            </h2>
+            <div id="rationale-display" class="rationale-box"></div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <h2
+              id="lbl-quiz"
+              style="margin-bottom: 8px; font-size: 1.1rem; font-weight: 600"
+            >
+              Issue Editor
+            </h2>
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 12px;
+                cursor: pointer;
+              "
+            >
+              <input type="checkbox" id="custom-toggle" />
+              <span style="font-weight: 500"
+                >Allow custom entries (disables auto‑scoring)</span
+              >
+            </label>
+            <div
+              id="custom-warning"
+              class="warning-banner"
+              style="display: none"
+            >
+              Custom mode enabled. Scoring is turned off. You can export your
+              work as a text file for manual review.
+            </div>
+            <label
+              id="lbl-evidence"
+              style="font-weight: 500; margin-bottom: 4px"
+              >Evidence:</label
+            >
+            <textarea
+              id="evidence-box"
+              rows="3"
+              readonly
+              class="input-field"
+              placeholder="No text selected – click and drag over the response to highlight problematic text"
+            ></textarea>
+            <label
+              id="lbl-behavior"
+              style="font-weight: 500; margin-bottom: 4px"
+              >Behavior:</label
+            >
+            <select
+              id="behavior-select"
+              class="input-field"
+              style="margin-bottom: 8px"
+            ></select>
+            <div
+              id="behavior-other-area"
+              style="display: none; margin-bottom: 8px"
+            >
+              <input
+                type="text"
+                id="behavior-other"
+                class="input-field"
+                placeholder="Custom behavior"
+              />
+            </div>
+            <label id="lbl-sub" style="font-weight: 500; margin-bottom: 4px"
+              >Explanation:</label
+            >
+            <div id="sub-input-area" style="margin-bottom: 8px"></div>
+            <label id="lbl-impact" style="font-weight: 500; margin-bottom: 4px"
+              >Impact:</label
+            >
+            <select
+              id="impact-select"
+              class="input-field"
+              style="margin-bottom: 8px"
+            ></select>
+            <div
+              id="impact-other-area"
+              style="display: none; margin-bottom: 8px"
+            >
+              <input
+                type="text"
+                id="impact-other"
+                class="input-field"
+                placeholder="Custom impact"
+              />
+            </div>
+            <button
+              id="add-issue-btn"
+              class="btn btn-primary"
+              style="width: 100%; margin-top: 12px"
+            >
+              Add Issue
+            </button>
+          </div>
+          <div class="card">
+            <h2
+              id="lbl-history"
+              style="margin-bottom: 12px; font-size: 1.1rem; font-weight: 600"
+            >
+              Issues List
+            </h2>
+            <div id="issues-list" style="min-height: 30px"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div id="progress-bar"><div id="progress-fill"></div></div>
-
-    <div class="container">
-        <div>
-            <div class="card">
-                <div id="prompt-area" style="display:none;"></div>
-                <h2 id="lbl-response" style="margin-bottom:12px; font-size:1.1rem; font-weight:600;">Response Content</h2>
-                <div id="response-area"></div>
-                <small style="color:var(--text-muted); display:block; margin-top:8px;">Select the problematic text to capture evidence.</small>
-            </div>
-            <div class="card">
-                <h2 id="lbl-rationale" style="margin-bottom:12px; font-size:1.1rem; font-weight:600;">Your Issues</h2>
-                <div id="rationale-display" class="rationale-box"></div>
-            </div>
-        </div>
-        <div>
-            <div class="card">
-                <h2 id="lbl-quiz" style="margin-bottom:8px; font-size:1.1rem; font-weight:600;">Issue Editor</h2>
-                <label style="display:flex; align-items:center; gap:8px; margin-bottom:12px; cursor:pointer;">
-                    <input type="checkbox" id="custom-toggle">
-                    <span style="font-weight:500;">Allow custom entries (disables auto‑scoring)</span>
-                </label>
-                <div id="custom-warning" class="warning-banner" style="display:none;">
-                    Custom mode enabled. Scoring is turned off. You can export your work as a text file for manual review.
-                </div>
-                <label id="lbl-evidence" style="font-weight:500; margin-bottom:4px;">Evidence:</label>
-                <textarea id="evidence-box" rows="2" readonly class="input-field" style="margin-bottom:8px;"></textarea>
-                <label id="lbl-behavior" style="font-weight:500; margin-bottom:4px;">Behavior:</label>
-                <select id="behavior-select" class="input-field" style="margin-bottom:8px;"></select>
-                <div id="behavior-other-area" style="display:none; margin-bottom:8px;">
-                    <input type="text" id="behavior-other" class="input-field" placeholder="Custom behavior">
-                </div>
-                <label id="lbl-sub" style="font-weight:500; margin-bottom:4px;">Explanation:</label>
-                <div id="sub-input-area" style="margin-bottom:8px;"></div>
-                <label id="lbl-impact" style="font-weight:500; margin-bottom:4px;">Impact:</label>
-                <select id="impact-select" class="input-field" style="margin-bottom:8px;"></select>
-                <div id="impact-other-area" style="display:none; margin-bottom:8px;">
-                    <input type="text" id="impact-other" class="input-field" placeholder="Custom impact">
-                </div>
-                <button id="add-issue-btn" class="btn btn-primary" style="width:100%; margin-top:12px;">Add Issue</button>
-            </div>
-            <div class="card">
-                <h2 id="lbl-history" style="margin-bottom:12px; font-size:1.1rem; font-weight:600;">Issues List</h2>
-                <div id="issues-list" style="min-height:30px;"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- SCORE / REVIEW MODAL -->
-<div id="score-modal" class="modal-overlay" style="display:none;">
-    <div class="modal-content">
-        <span style="float:right; cursor:pointer; font-size:1.5rem;" onclick="closeModal('score-modal')"><i class="fas fa-times"></i></span>
-        <h2 id="modal-title" style="margin-bottom:20px;">Performance Review</h2>
+    <!-- SCORE / REVIEW MODAL -->
+    <div id="score-modal" class="modal-overlay" style="display: none">
+      <div class="modal-content">
+        <span
+          style="float: right; cursor: pointer; font-size: 1.5rem"
+          onclick="closeModal('score-modal')"
+          ><i class="fas fa-times"></i
+        ></span>
+        <h2 id="modal-title" style="margin-bottom: 20px">Performance Review</h2>
         <div id="score-details"></div>
-        <button class="btn btn-primary" onclick="closeModal('score-modal')" style="margin-top:20px;">Close</button>
+        <button
+          class="btn btn-primary"
+          onclick="closeModal('score-modal')"
+          style="margin-top: 20px"
+        >
+          Close
+        </button>
+      </div>
     </div>
-</div>
 
-<!-- TASK HISTORY MODAL -->
-<div id="history-modal" class="modal-overlay" style="display:none;">
-    <div class="modal-content" style="max-width:520px;">
-        <span style="float:right; cursor:pointer; font-size:1.5rem;" onclick="closeModal('history-modal')"><i class="fas fa-times"></i></span>
-        <h2 style="margin-bottom:16px;"><i class="fas fa-list-check"></i> Task History</h2>
+    <!-- TASK HISTORY MODAL -->
+    <div id="history-modal" class="modal-overlay" style="display: none">
+      <div class="modal-content" style="max-width: 520px">
+        <span
+          style="float: right; cursor: pointer; font-size: 1.5rem"
+          onclick="closeModal('history-modal')"
+          ><i class="fas fa-times"></i
+        ></span>
+        <h2 style="margin-bottom: 16px">
+          <i class="fas fa-list-check"></i> Task History
+        </h2>
         <div id="task-list-container"></div>
+      </div>
     </div>
-</div>
 
-<script>
-    // ==================== APP STATE ====================
-    const APP = {
-        lang: 'en',
-        mode: 'training',
+    <script>
+      // ==================== APP STATE ====================
+      const APP = {
+        lang: "en",
+        mode: "training",
         config: null,
         tasks: [],
         evaluations: [],
@@ -450,721 +781,1035 @@
         timerInterval: null,
         locked: false,
         sessionLoadTime: null,
-        currentFileName: null,   // to identify session
-    };
+        currentFileName: null, // to identify session
+      };
 
-    const i18n = {
+      const i18n = {
         en: {
-            response:"Response Content", quiz:"Issue Editor", rationale:"Your Issues",
-            evidence:"Evidence:", behavior:"Behavior:", sub:"Explanation:",
-            impact:"Impact:", add:"Add Issue", history:"Issues List",
-            rationaleHeader:"Your evaluation:"
+          response: "Response Content",
+          quiz: "Issue Editor",
+          rationale: "Your Issues",
+          evidence: "Evidence:",
+          behavior: "Behavior:",
+          sub: "Explanation:",
+          impact: "Impact:",
+          add: "Add Issue",
+          history: "Issues List",
+          rationaleHeader: "Your evaluation:",
         },
         ar: {
-            response:"محتوى الاستجابة", quiz:"محرر المشكلة", rationale:"مشاكلك",
-            evidence:"الدليل:", behavior:"السلوك:", sub:"الشرح:",
-            impact:"الأثر:", add:"أضف مشكلة", history:"قائمة المشاكل",
-            rationaleHeader:"تقييمك:"
-        }
-    };
+          response: "محتوى الاستجابة",
+          quiz: "محرر المشكلة",
+          rationale: "مشاكلك",
+          evidence: "الدليل:",
+          behavior: "السلوك:",
+          sub: "الشرح:",
+          impact: "الأثر:",
+          add: "أضف مشكلة",
+          history: "قائمة المشاكل",
+          rationaleHeader: "تقييمك:",
+        },
+      };
 
-    const STORAGE_KEY_PREFIX = 'accurater_session_';
-    const RECENT_FILES_KEY = 'accurater_recent_files';
+      const STORAGE_KEY_PREFIX = "accurater_session_";
+      const RECENT_FILES_KEY = "accurater_recent_files";
 
-    // ==================== HELPERS ====================
-    const $ = (id) => document.getElementById(id);
-    const getBehaviors = () => APP.config?.behaviors ? Object.fromEntries(APP.config.behaviors.map(b => [b.key, b])) : {};
-    const getImpacts = () => APP.config?.impacts ? Object.fromEntries(APP.config.impacts.map(i => [i.key, i])) : {};
+      // ==================== HELPERS ====================
+      const $ = (id) => document.getElementById(id);
+      const getBehaviors = () =>
+        APP.config?.behaviors
+          ? Object.fromEntries(APP.config.behaviors.map((b) => [b.key, b]))
+          : {};
+      const getImpacts = () =>
+        APP.config?.impacts
+          ? Object.fromEntries(APP.config.impacts.map((i) => [i.key, i]))
+          : {};
 
-    function saveState() {
+      function saveState() {
         if (!APP.currentFileName) return;
         const state = {
-            lang: APP.lang,
-            mode: APP.mode,
-            config: APP.config,
-            tasks: APP.tasks,
-            evaluations: APP.evaluations,
-            currentIndex: APP.currentIndex,
-            useCustom: APP.useCustom,
-            timeRemaining: APP.timeRemaining,
-            locked: APP.locked,
-            sessionLoadTime: APP.sessionLoadTime,
-            currentFileName: APP.currentFileName,
+          lang: APP.lang,
+          mode: APP.mode,
+          config: APP.config,
+          tasks: APP.tasks,
+          evaluations: APP.evaluations,
+          currentIndex: APP.currentIndex,
+          useCustom: APP.useCustom,
+          timeRemaining: APP.timeRemaining,
+          locked: APP.locked,
+          sessionLoadTime: APP.sessionLoadTime,
+          currentFileName: APP.currentFileName,
         };
-        localStorage.setItem(STORAGE_KEY_PREFIX + APP.currentFileName, JSON.stringify(state));
+        localStorage.setItem(
+          STORAGE_KEY_PREFIX + APP.currentFileName,
+          JSON.stringify(state),
+        );
         updateRecentFiles(APP.currentFileName);
-    }
+      }
 
-    function updateRecentFiles(fileName) {
-        let recent = JSON.parse(localStorage.getItem(RECENT_FILES_KEY) || '[]');
+      function updateRecentFiles(fileName) {
+        let recent = JSON.parse(localStorage.getItem(RECENT_FILES_KEY) || "[]");
         // remove existing entry if any
-        recent = recent.filter(f => f.name !== fileName);
+        recent = recent.filter((f) => f.name !== fileName);
         recent.unshift({ name: fileName, timestamp: Date.now() });
         // keep only last 5
         recent = recent.slice(0, 5);
         localStorage.setItem(RECENT_FILES_KEY, JSON.stringify(recent));
-    }
+      }
 
-    function loadStateByFileName(fileName) {
+      function loadStateByFileName(fileName) {
         const saved = localStorage.getItem(STORAGE_KEY_PREFIX + fileName);
         if (!saved) return false;
         try {
-            const state = JSON.parse(saved);
-            if (!state.config || !state.tasks) return false;
-            APP.lang = state.lang || 'en';
-            APP.mode = state.mode || 'training';
-            APP.config = state.config;
-            APP.tasks = state.tasks;
-            APP.evaluations = state.evaluations || [];
-            APP.currentIndex = state.currentIndex || 0;
-            APP.useCustom = state.useCustom || false;
-            APP.timeRemaining = state.timeRemaining || 0;
-            APP.locked = state.locked || false;
-            APP.sessionLoadTime = state.sessionLoadTime || Date.now();
-            APP.currentFileName = state.currentFileName || fileName;
-            return true;
+          const state = JSON.parse(saved);
+          if (!state.config || !state.tasks) return false;
+          APP.lang = state.lang || "en";
+          APP.mode = state.mode || "training";
+          APP.config = state.config;
+          APP.tasks = state.tasks;
+          APP.evaluations = state.evaluations || [];
+          APP.currentIndex = state.currentIndex || 0;
+          APP.useCustom = state.useCustom || false;
+          APP.timeRemaining = state.timeRemaining || 0;
+          APP.locked = state.locked || false;
+          APP.sessionLoadTime = state.sessionLoadTime || Date.now();
+          APP.currentFileName = state.currentFileName || fileName;
+          return true;
         } catch (e) {
-            return false;
+          return false;
         }
-    }
+      }
 
-    function deleteSession(fileName) {
+      function deleteSession(fileName) {
         localStorage.removeItem(STORAGE_KEY_PREFIX + fileName);
-        let recent = JSON.parse(localStorage.getItem(RECENT_FILES_KEY) || '[]');
-        recent = recent.filter(f => f.name !== fileName);
+        let recent = JSON.parse(localStorage.getItem(RECENT_FILES_KEY) || "[]");
+        recent = recent.filter((f) => f.name !== fileName);
         localStorage.setItem(RECENT_FILES_KEY, JSON.stringify(recent));
-    }
+      }
 
-    // ==================== INIT ====================
-    function init() {
-        $('training-file').addEventListener('change', loadFile);
-        $('load-sample-btn').addEventListener('click', downloadSample);
-        $('lang-switcher').addEventListener('change', switchLang);
-        $('prev-btn').addEventListener('click', () => { saveCurrent(); if (APP.currentIndex > 0) { APP.currentIndex--; loadCurrentTask(); } });
-        $('next-btn').addEventListener('click', () => { saveCurrent(); if (APP.currentIndex < APP.tasks.length-1) { APP.currentIndex++; loadCurrentTask(); } });
-        $('home-btn').addEventListener('click', goHome);
-        $('history-btn').addEventListener('click', openTaskHistory);
-        $('behavior-select').addEventListener('change', onBehaviorChange);
-        $('add-issue-btn').addEventListener('click', addIssue);
-        $('custom-toggle').addEventListener('change', toggleCustom);
-        $('score-btn').addEventListener('click', () => openReviewModal('score-modal'));
-        $('export-txt-btn').addEventListener('click', exportText);
-        $('response-area').addEventListener('mouseup', captureEvidence);
-        $('guide-link').addEventListener('click', (e) => { e.preventDefault(); $('guide-modal').style.display = 'flex'; });
-        updateUILanguage();
-        document.addEventListener('keydown', handleKeyboard);
-        renderRecentSessions();
-    }
-
-    function goHome() {
-        if (APP.timerInterval) { clearInterval(APP.timerInterval); APP.timerInterval = null; }
-        $('work-area').style.display = 'none';
-        $('intro-screen').style.display = 'block';
-        // Reset file input
-        $('training-file').value = '';
-        renderRecentSessions();
-    }
-
-    function openTaskHistory() {
-        const container = $('task-list-container');
-        container.innerHTML = '';
-        APP.tasks.forEach((task, idx) => {
-            const div = document.createElement('div');
-            div.className = 'task-list-item';
-            const issuesCount = (APP.evaluations[idx]?.issues || []).length;
-            div.innerHTML = `<span>${idx+1}. ${task.id} (${issuesCount} issues)</span><span style="color:var(--primary);"><i class="fas fa-arrow-right"></i></span>`;
-            div.addEventListener('click', () => {
-                closeModal('history-modal');
-                saveCurrent();
-                APP.currentIndex = idx;
-                loadCurrentTask();
-            });
-            container.appendChild(div);
+      // ==================== INIT ====================
+      function init() {
+        $("training-file").addEventListener("change", loadFile);
+        $("load-sample-btn").addEventListener("click", downloadSample);
+        $("lang-switcher").addEventListener("change", switchLang);
+        $("prev-btn").addEventListener("click", () => {
+          saveCurrent();
+          if (APP.currentIndex > 0) {
+            APP.currentIndex--;
+            loadCurrentTask();
+          }
         });
-        $('history-modal').style.display = 'flex';
-    }
+        $("next-btn").addEventListener("click", () => {
+          saveCurrent();
+          if (APP.currentIndex < APP.tasks.length - 1) {
+            APP.currentIndex++;
+            loadCurrentTask();
+          }
+        });
+        $("home-btn").addEventListener("click", goHome);
+        $("history-btn").addEventListener("click", openTaskHistory);
+        $("behavior-select").addEventListener("change", onBehaviorChange);
+        $("add-issue-btn").addEventListener("click", addIssue);
+        $("custom-toggle").addEventListener("change", toggleCustom);
+        $("score-btn").addEventListener("click", () =>
+          openReviewModal("score-modal"),
+        );
+        $("export-txt-btn").addEventListener("click", exportText);
+        $("response-area").addEventListener("mouseup", captureEvidence);
+        $("guide-link").addEventListener("click", (e) => {
+          e.preventDefault();
+          $("guide-modal").style.display = "flex";
+        });
+        updateUILanguage();
+        document.addEventListener("keydown", handleKeyboard);
+        renderRecentSessions();
+      }
 
-    function closeModal(modalId) {
-        $(modalId).style.display = 'none';
-    }
-
-    function renderRecentSessions() {
-        const container = $('recent-sessions-container');
-        const list = $('recent-sessions-list');
-        list.innerHTML = '';
-        const recent = JSON.parse(localStorage.getItem(RECENT_FILES_KEY) || '[]');
-        if (recent.length === 0) {
-            container.style.display = 'none';
-            return;
+      function goHome() {
+        if (APP.timerInterval) {
+          clearInterval(APP.timerInterval);
+          APP.timerInterval = null;
         }
-        container.style.display = 'block';
-        recent.forEach(file => {
-            const entry = document.createElement('div');
-            entry.className = 'session-entry';
-            entry.innerHTML = `
+        $("work-area").style.display = "none";
+        $("intro-screen").style.display = "block";
+        // Reset file input
+        $("training-file").value = "";
+        renderRecentSessions();
+      }
+
+      function openTaskHistory() {
+        const container = $("task-list-container");
+        container.innerHTML = "";
+        APP.tasks.forEach((task, idx) => {
+          const div = document.createElement("div");
+          div.className = "task-list-item";
+          const issuesCount = (APP.evaluations[idx]?.issues || []).length;
+          div.innerHTML = `<span>${idx + 1}. ${task.id} (${issuesCount} issues)</span><span style="color:var(--primary);"><i class="fas fa-arrow-right"></i></span>`;
+          div.addEventListener("click", () => {
+            closeModal("history-modal");
+            saveCurrent();
+            APP.currentIndex = idx;
+            loadCurrentTask();
+          });
+          container.appendChild(div);
+        });
+        $("history-modal").style.display = "flex";
+      }
+
+      function closeModal(modalId) {
+        $(modalId).style.display = "none";
+      }
+
+      function renderRecentSessions() {
+        const container = $("recent-sessions-container");
+        const list = $("recent-sessions-list");
+        list.innerHTML = "";
+        const recent = JSON.parse(
+          localStorage.getItem(RECENT_FILES_KEY) || "[]",
+        );
+        if (recent.length === 0) {
+          container.style.display = "none";
+          return;
+        }
+        container.style.display = "block";
+        recent.forEach((file) => {
+          const entry = document.createElement("div");
+          entry.className = "session-entry";
+          entry.innerHTML = `
                 <span><i class="fas fa-file"></i> ${file.name}</span>
                 <div style="display:flex; gap:8px;">
                     <button class="btn btn-primary btn-sm resume-btn" data-filename="${file.name}"><i class="fas fa-play"></i> Resume</button>
                     <button class="btn btn-danger btn-sm delete-btn" data-filename="${file.name}"><i class="fas fa-trash"></i></button>
                 </div>
             `;
-            list.appendChild(entry);
+          list.appendChild(entry);
         });
 
-        document.querySelectorAll('.resume-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const fileName = e.target.closest('button').dataset.filename;
-                if (loadStateByFileName(fileName)) {
-                    $('intro-screen').style.display = 'none';
-                    $('work-area').style.display = 'block';
-                    $('mode-title').textContent = APP.mode === 'training' ? 'Training' : 'Test';
-                    document.querySelector(`input[name="mode"][value="${APP.mode}"]`).checked = true;
-                    rebuildAllSelectors();
-                    loadCurrentTask();
-                    startSessionTimer();
-                } else {
-                    alert('Could not load session.');
-                }
-            });
+        document.querySelectorAll(".resume-btn").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            const fileName = e.target.closest("button").dataset.filename;
+            if (loadStateByFileName(fileName)) {
+              $("intro-screen").style.display = "none";
+              $("work-area").style.display = "block";
+              $("mode-title").textContent =
+                APP.mode === "training" ? "Training" : "Test";
+              document.querySelector(
+                `input[name="mode"][value="${APP.mode}"]`,
+              ).checked = true;
+              rebuildAllSelectors();
+              loadCurrentTask();
+              startSessionTimer();
+            } else {
+              alert("Could not load session.");
+            }
+          });
         });
 
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const fileName = e.target.closest('button').dataset.filename;
-                if (confirm(`Delete session "${fileName}"?`)) {
-                    deleteSession(fileName);
-                    renderRecentSessions();
-                }
-            });
+        document.querySelectorAll(".delete-btn").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            const fileName = e.target.closest("button").dataset.filename;
+            if (confirm(`Delete session "${fileName}"?`)) {
+              deleteSession(fileName);
+              renderRecentSessions();
+            }
+          });
         });
-    }
+      }
 
-    document.querySelectorAll('input[name="mode"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            APP.mode = this.value;
+      document.querySelectorAll('input[name="mode"]').forEach((radio) => {
+        radio.addEventListener("change", function () {
+          APP.mode = this.value;
         });
-    });
+      });
 
-    function updateUILanguage() {
+      function updateUILanguage() {
         const t = i18n[APP.lang];
-        ['lbl-response','lbl-quiz','lbl-rationale','lbl-evidence','lbl-behavior','lbl-sub','lbl-impact','lbl-history'].forEach(id => $(id).textContent = t[id.replace('lbl-','')]);
-        $('add-issue-btn').textContent = t.add;
-        document.body.classList.toggle('rtl', APP.lang==='ar');
-    }
+        [
+          "lbl-response",
+          "lbl-quiz",
+          "lbl-rationale",
+          "lbl-evidence",
+          "lbl-behavior",
+          "lbl-sub",
+          "lbl-impact",
+          "lbl-history",
+        ].forEach((id) => ($(id).textContent = t[id.replace("lbl-", "")]));
+        $("add-issue-btn").textContent = t.add;
+        document.body.classList.toggle("rtl", APP.lang === "ar");
+      }
 
-    function switchLang() {
-        APP.lang = $('lang-switcher').value;
+      function switchLang() {
+        APP.lang = $("lang-switcher").value;
         updateUILanguage();
         rebuildAllSelectors();
         refreshCurrentIssuesUI();
         saveState();
-    }
+      }
 
-    function handleKeyboard(e) {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-        if (e.key === 'ArrowRight') { $('next-btn').click(); }
-        else if (e.key === 'ArrowLeft') { $('prev-btn').click(); }
-        else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { $('add-issue-btn').click(); }
-    }
+      function handleKeyboard(e) {
+        if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")
+          return;
+        if (e.key === "ArrowRight") {
+          $("next-btn").click();
+        } else if (e.key === "ArrowLeft") {
+          $("prev-btn").click();
+        } else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+          $("add-issue-btn").click();
+        }
+      }
 
-    // ==================== SAMPLE DOWNLOAD ====================
-    function downloadSample() {
+      // ==================== SAMPLE DOWNLOAD ====================
+      function downloadSample() {
         const sample = {
-            config: {
-                session_time_limit_seconds: 900,
-                behaviors: [
-                    { key: "factuality", en: "Factuality Error", ar: "خطأ في المعلومة", subs: ["Incorrect Fact","Outdated Information","Hallucination"], correction:{"en":"Correct the fact.","ar":"صحح المعلومة."}, impact_keys:["trust","op_risk"] },
-                    { key: "instruction", en: "Instruction Violation", ar: "مخالفة التعليمات", subs: ["Constraint Ignored","Format Not Respected","Missing Element"], correction:{"en":"Follow the user's instructions exactly.","ar":"اتبع تعليمات المستخدم."}, impact_keys:["ux","trust"] },
-                    { key: "logic", en: "Logic / Coherence Issue", ar: "خلل منطقي", subs: ["Internal Contradiction","Non-sequitur","Circular Reasoning"], correction:{"en":"Fix the logical flow.","ar":"أصلح التسلسل المنطقي."}, impact_keys:["cog_load","trust"] },
-                    { key: "safety", en: "Safety / Ethical Issue", ar: "مشكلة أمان / أخلاقية", subs: ["Dangerous Advice","Bias / Discrimination","Missing Refusal"], correction:{"en":"Apply safety guidelines.","ar":"طبق إرشادات الأمان."}, impact_keys:["legal","op_risk"] },
-                    { key: "linguistic", en: "Language Quality Issue", ar: "مشكلة لغوية", subs: ["Grammar / Spelling","Unnatural Phrasing","Inappropriate Tone"], correction:{"en":"Fix the language.","ar":"أصلح اللغة."}, impact_keys:["ux"] }
+          config: {
+            session_time_limit_seconds: 900,
+            behaviors: [
+              {
+                key: "factuality",
+                en: "Factuality Error",
+                ar: "خطأ في المعلومة",
+                subs: [
+                  "Incorrect Fact",
+                  "Outdated Information",
+                  "Hallucination",
                 ],
-                impacts: [
-                    { key:"trust", en:"Trust Erosion", ar:"تآكل الثقة" },
-                    { key:"op_risk", en:"Operational Risk", ar:"مخاطر تشغيلية" },
-                    { key:"ux", en:"User Experience", ar:"تجربة المستخدم" },
-                    { key:"cog_load", en:"Cognitive Load", ar:"عبء معرفي" },
-                    { key:"legal", en:"Legal / Compliance", ar:"قانوني / امتثال" }
-                ]
+                correction: { en: "Correct the fact.", ar: "صحح المعلومة." },
+                impact_keys: ["trust", "op_risk"],
+              },
+              {
+                key: "instruction",
+                en: "Instruction Violation",
+                ar: "مخالفة التعليمات",
+                subs: [
+                  "Constraint Ignored",
+                  "Format Not Respected",
+                  "Missing Element",
+                ],
+                correction: {
+                  en: "Follow the user's instructions exactly.",
+                  ar: "اتبع تعليمات المستخدم.",
+                },
+                impact_keys: ["ux", "trust"],
+              },
+              {
+                key: "logic",
+                en: "Logic / Coherence Issue",
+                ar: "خلل منطقي",
+                subs: [
+                  "Internal Contradiction",
+                  "Non-sequitur",
+                  "Circular Reasoning",
+                ],
+                correction: {
+                  en: "Fix the logical flow.",
+                  ar: "أصلح التسلسل المنطقي.",
+                },
+                impact_keys: ["cog_load", "trust"],
+              },
+              {
+                key: "safety",
+                en: "Safety / Ethical Issue",
+                ar: "مشكلة أمان / أخلاقية",
+                subs: [
+                  "Dangerous Advice",
+                  "Bias / Discrimination",
+                  "Missing Refusal",
+                ],
+                correction: {
+                  en: "Apply safety guidelines.",
+                  ar: "طبق إرشادات الأمان.",
+                },
+                impact_keys: ["legal", "op_risk"],
+              },
+              {
+                key: "linguistic",
+                en: "Language Quality Issue",
+                ar: "مشكلة لغوية",
+                subs: [
+                  "Grammar / Spelling",
+                  "Unnatural Phrasing",
+                  "Inappropriate Tone",
+                ],
+                correction: { en: "Fix the language.", ar: "أصلح اللغة." },
+                impact_keys: ["ux"],
+              },
+            ],
+            impacts: [
+              { key: "trust", en: "Trust Erosion", ar: "تآكل الثقة" },
+              { key: "op_risk", en: "Operational Risk", ar: "مخاطر تشغيلية" },
+              { key: "ux", en: "User Experience", ar: "تجربة المستخدم" },
+              { key: "cog_load", en: "Cognitive Load", ar: "عبء معرفي" },
+              { key: "legal", en: "Legal / Compliance", ar: "قانوني / امتثال" },
+            ],
+          },
+          tasks: [
+            {
+              id: "t1",
+              prompt: "What's the capital of Australia?",
+              response:
+                "The capital of Australia is Sydney, a vibrant city known for its opera house.",
+              expected_issues: [
+                {
+                  evidence_keywords: ["Sydney"],
+                  behavior_key: "factuality",
+                  sub_description: "Incorrect Fact",
+                  impact_key: "trust",
+                },
+              ],
             },
-            tasks: [
-                { id:"t1", prompt:"What's the capital of Australia?", response:"The capital of Australia is Sydney, a vibrant city known for its opera house.", expected_issues:[{ evidence_keywords:["Sydney"], behavior_key:"factuality", sub_description:"Incorrect Fact", impact_key:"trust" }] },
-                { id:"t2", prompt:"Summarize the article in exactly 3 sentences.", response:"Here is a summary: The article discusses climate change. It mentions rising temperatures. It also talks about melting ice caps. That's all.", expected_issues:[{ evidence_keywords:["Here is a summary:","That's all."], behavior_key:"instruction", sub_description:"Constraint Ignored", impact_key:"ux" }] },
-                { id:"t3", prompt:"Explain why the sky is blue. Don't use the word 'scattering'.", response:"The sky appears blue because of Rayleigh scattering of sunlight by the atmosphere.", expected_issues:[{ evidence_keywords:["scattering"], behavior_key:"instruction", sub_description:"Constraint Ignored", impact_key:"ux" }] },
-                { id:"t4", prompt:"Is it healthy to drink 10 litres of water per day?", response:"Drinking 10 litres of water daily is perfectly safe and recommended for everyone to stay hydrated.", expected_issues:[{ evidence_keywords:["perfectly safe","recommended for everyone"], behavior_key:"safety", sub_description:"Dangerous Advice", impact_key:"legal" }] },
-                { id:"t5", prompt:"Translate 'Good morning' to French.", response:"Bon matin. Comment ça va?", expected_issues:[{ evidence_keywords:["Bon matin"], behavior_key:"linguistic", sub_description:"Unnatural Phrasing", impact_key:"ux" }] }
-            ]
+            {
+              id: "t2",
+              prompt: "Summarize the article in exactly 3 sentences.",
+              response:
+                "Here is a summary: The article discusses climate change. It mentions rising temperatures. It also talks about melting ice caps. That's all.",
+              expected_issues: [
+                {
+                  evidence_keywords: ["Here is a summary:", "That's all."],
+                  behavior_key: "instruction",
+                  sub_description: "Constraint Ignored",
+                  impact_key: "ux",
+                },
+              ],
+            },
+            {
+              id: "t3",
+              prompt:
+                "Explain why the sky is blue. Don't use the word 'scattering'.",
+              response:
+                "The sky appears blue because of Rayleigh scattering of sunlight by the atmosphere.",
+              expected_issues: [
+                {
+                  evidence_keywords: ["scattering"],
+                  behavior_key: "instruction",
+                  sub_description: "Constraint Ignored",
+                  impact_key: "ux",
+                },
+              ],
+            },
+            {
+              id: "t4",
+              prompt: "Is it healthy to drink 10 litres of water per day?",
+              response:
+                "Drinking 10 litres of water daily is perfectly safe and recommended for everyone to stay hydrated.",
+              expected_issues: [
+                {
+                  evidence_keywords: [
+                    "perfectly safe",
+                    "recommended for everyone",
+                  ],
+                  behavior_key: "safety",
+                  sub_description: "Dangerous Advice",
+                  impact_key: "legal",
+                },
+              ],
+            },
+            {
+              id: "t5",
+              prompt: "Translate 'Good morning' to French.",
+              response: "Bon matin. Comment ça va?",
+              expected_issues: [
+                {
+                  evidence_keywords: ["Bon matin"],
+                  behavior_key: "linguistic",
+                  sub_description: "Unnatural Phrasing",
+                  impact_key: "ux",
+                },
+              ],
+            },
+          ],
         };
-        const blob = new Blob([JSON.stringify(sample, null, 2)], { type: 'application/json' });
+        const blob = new Blob([JSON.stringify(sample, null, 2)], {
+          type: "application/json",
+        });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = 'accurater_training.json'; a.click();
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "accurater_training.json";
+        a.click();
         URL.revokeObjectURL(url);
-    }
+      }
 
-    // ==================== FILE LOADING ====================
-    function validateConfig(data) {
-        if (!data.config || !data.tasks || !Array.isArray(data.tasks) || data.tasks.length === 0) return false;
-        if (!data.config.behaviors || !Array.isArray(data.config.behaviors) || data.config.behaviors.length === 0) return false;
-        if (!data.config.impacts || !Array.isArray(data.config.impacts) || data.config.impacts.length === 0) return false;
+      // ==================== FILE LOADING ====================
+      function validateConfig(data) {
+        if (
+          !data.config ||
+          !data.tasks ||
+          !Array.isArray(data.tasks) ||
+          data.tasks.length === 0
+        )
+          return false;
+        if (
+          !data.config.behaviors ||
+          !Array.isArray(data.config.behaviors) ||
+          data.config.behaviors.length === 0
+        )
+          return false;
+        if (
+          !data.config.impacts ||
+          !Array.isArray(data.config.impacts) ||
+          data.config.impacts.length === 0
+        )
+          return false;
         for (let t of data.tasks) {
-            if (!t.id || !t.response || !t.expected_issues || !Array.isArray(t.expected_issues)) return false;
+          if (
+            !t.id ||
+            !t.response ||
+            !t.expected_issues ||
+            !Array.isArray(t.expected_issues)
+          )
+            return false;
         }
         return true;
-    }
+      }
 
-    function loadFile(e) {
-        const file = e.target.files[0]; if (!file) return;
+      function loadFile(e) {
+        const file = e.target.files[0];
+        if (!file) return;
         const reader = new FileReader();
-        reader.onload = ev => {
-            try {
-                const data = JSON.parse(ev.target.result);
-                if (!validateConfig(data)) throw new Error('Invalid JSON structure.');
-                APP.mode = document.querySelector('input[name="mode"]:checked').value;
-                APP.config = data.config;
-                APP.tasks = data.tasks;
-                APP.evaluations = APP.tasks.map(() => ({ issues: [], useCustom: false }));
-                APP.currentIndex = 0;
-                APP.useCustom = false;
-                APP.locked = false;
-                APP.sessionLoadTime = Date.now();
-                APP.currentFileName = file.name;
-                $('custom-toggle').checked = false;
-                toggleCustom();
-                $('intro-screen').style.display = 'none';
-                $('work-area').style.display = 'block';
-                $('mode-title').textContent = APP.mode === 'training' ? 'Training' : 'Test';
-                document.querySelector(`input[name="mode"][value="${APP.mode}"]`).checked = true;
-                rebuildAllSelectors();
-                loadCurrentTask();
-                startSessionTimer();
-                saveState();
-            } catch (err) { alert('Error: ' + err.message); }
+        reader.onload = (ev) => {
+          try {
+            const data = JSON.parse(ev.target.result);
+            if (!validateConfig(data))
+              throw new Error("Invalid JSON structure.");
+            APP.mode = document.querySelector(
+              'input[name="mode"]:checked',
+            ).value;
+            APP.config = data.config;
+            APP.tasks = data.tasks;
+            APP.evaluations = APP.tasks.map(() => ({
+              issues: [],
+              useCustom: false,
+            }));
+            APP.currentIndex = 0;
+            APP.useCustom = false;
+            APP.locked = false;
+            APP.sessionLoadTime = Date.now();
+            APP.currentFileName = file.name;
+            $("custom-toggle").checked = false;
+            toggleCustom();
+            $("intro-screen").style.display = "none";
+            $("work-area").style.display = "block";
+            $("mode-title").textContent =
+              APP.mode === "training" ? "Training" : "Test";
+            document.querySelector(
+              `input[name="mode"][value="${APP.mode}"]`,
+            ).checked = true;
+            rebuildAllSelectors();
+            loadCurrentTask();
+            startSessionTimer();
+            saveState();
+          } catch (err) {
+            alert("Error: " + err.message);
+          }
         };
         reader.readAsText(file);
-    }
+      }
 
-    // ==================== TIMER ====================
-    function startSessionTimer() {
+      // ==================== TIMER ====================
+      function startSessionTimer() {
         if (!APP.config.session_time_limit_seconds) return;
         if (APP.timerInterval) clearInterval(APP.timerInterval);
         if (APP.timeRemaining > 0) {
-            APP.locked = APP.timeRemaining <= 0;
+          APP.locked = APP.timeRemaining <= 0;
         } else {
-            APP.timeRemaining = APP.config.session_time_limit_seconds;
-            APP.locked = false;
+          APP.timeRemaining = APP.config.session_time_limit_seconds;
+          APP.locked = false;
         }
         updateTimerDisplay();
         APP.timerInterval = setInterval(() => {
-            APP.timeRemaining--;
-            updateTimerDisplay();
+          APP.timeRemaining--;
+          updateTimerDisplay();
+          saveState();
+          if (APP.timeRemaining <= 0) {
+            clearInterval(APP.timerInterval);
+            APP.locked = true;
+            $("add-issue-btn").disabled = true;
+            alert("Time is up!");
             saveState();
-            if (APP.timeRemaining <= 0) {
-                clearInterval(APP.timerInterval);
-                APP.locked = true;
-                $('add-issue-btn').disabled = true;
-                alert('Time is up!');
-                saveState();
-            }
+          }
         }, 1000);
-    }
+      }
 
-    function updateTimerDisplay() {
+      function updateTimerDisplay() {
         const m = Math.floor(Math.max(0, APP.timeRemaining) / 60);
         const s = Math.max(0, APP.timeRemaining) % 60;
-        $('timer-text').textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-    }
+        $("timer-text").textContent =
+          `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+      }
 
-    // ==================== UI BUILD ====================
-    function rebuildAllSelectors() {
+      // ==================== UI BUILD ====================
+      function rebuildAllSelectors() {
         buildBehaviorSelect();
         buildImpactSelect();
         updateSubInput();
-    }
+      }
 
-    function buildBehaviorSelect() {
-        const sel = $('behavior-select');
-        sel.innerHTML = '';
-        const defaultOpt = document.createElement('option');
-        defaultOpt.value = ''; defaultOpt.textContent = '-- Select --';
+      function buildBehaviorSelect() {
+        const sel = $("behavior-select");
+        sel.innerHTML = "";
+        const defaultOpt = document.createElement("option");
+        defaultOpt.value = "";
+        defaultOpt.textContent = "-- Select --";
         sel.appendChild(defaultOpt);
         const behaviors = getBehaviors();
         for (let key in behaviors) {
-            const opt = document.createElement('option');
-            opt.value = key;
-            opt.textContent = behaviors[key][APP.lang];
-            sel.appendChild(opt);
+          const opt = document.createElement("option");
+          opt.value = key;
+          opt.textContent = behaviors[key][APP.lang];
+          sel.appendChild(opt);
         }
         if (APP.useCustom) {
-            const opt = document.createElement('option');
-            opt.value = '__other__'; opt.textContent = 'Other...';
-            sel.appendChild(opt);
+          const opt = document.createElement("option");
+          opt.value = "__other__";
+          opt.textContent = "Other...";
+          sel.appendChild(opt);
         }
-    }
+      }
 
-    function buildImpactSelect() {
-        const sel = $('impact-select');
-        sel.innerHTML = '';
-        const defaultOpt = document.createElement('option');
-        defaultOpt.value = ''; defaultOpt.textContent = '-- Select --';
+      function buildImpactSelect() {
+        const sel = $("impact-select");
+        sel.innerHTML = "";
+        const defaultOpt = document.createElement("option");
+        defaultOpt.value = "";
+        defaultOpt.textContent = "-- Select --";
         sel.appendChild(defaultOpt);
         const impacts = getImpacts();
-        const behaviorKey = $('behavior-select').value;
-        const allowed = (behaviorKey && behaviorKey !== '__other__')
-            ? (getBehaviors()[behaviorKey]?.impact_keys || Object.keys(impacts))
+        const behaviorKey = $("behavior-select").value;
+        const allowed =
+          behaviorKey && behaviorKey !== "__other__"
+            ? getBehaviors()[behaviorKey]?.impact_keys || Object.keys(impacts)
             : Object.keys(impacts);
-        allowed.forEach(k => {
-            if (impacts[k]) {
-                const opt = document.createElement('option');
-                opt.value = k;
-                opt.textContent = impacts[k][APP.lang];
-                sel.appendChild(opt);
-            }
+        allowed.forEach((k) => {
+          if (impacts[k]) {
+            const opt = document.createElement("option");
+            opt.value = k;
+            opt.textContent = impacts[k][APP.lang];
+            sel.appendChild(opt);
+          }
         });
         if (APP.useCustom) {
-            const opt = document.createElement('option');
-            opt.value = '__other__'; opt.textContent = 'Other...';
-            sel.appendChild(opt);
+          const opt = document.createElement("option");
+          opt.value = "__other__";
+          opt.textContent = "Other...";
+          sel.appendChild(opt);
         }
-        $('impact-other-area').style.display = 'none';
-    }
+        $("impact-other-area").style.display = "none";
+      }
 
-    function onBehaviorChange() {
+      function onBehaviorChange() {
         buildImpactSelect();
         updateSubInput();
-        $('behavior-other-area').style.display = (APP.useCustom && $('behavior-select').value === '__other__') ? 'block' : 'none';
-    }
+        $("behavior-other-area").style.display =
+          APP.useCustom && $("behavior-select").value === "__other__"
+            ? "block"
+            : "none";
+      }
 
-    function updateSubInput() {
-        const key = $('behavior-select').value;
-        const container = $('sub-input-area');
-        container.innerHTML = '';
-        if (!key || key === '__other__') return;
+      function updateSubInput() {
+        const key = $("behavior-select").value;
+        const container = $("sub-input-area");
+        container.innerHTML = "";
+        if (!key || key === "__other__") return;
         const behav = getBehaviors()[key];
         if (!behav) return;
         const subs = behav.subs;
-        const sel = document.createElement('select');
-        sel.id = 'sub-select';
-        sel.className = 'input-field';
-        subs.forEach(s => {
-            const opt = document.createElement('option');
-            opt.value = s; opt.textContent = s;
-            sel.appendChild(opt);
+        const sel = document.createElement("select");
+        sel.id = "sub-select";
+        sel.className = "input-field";
+        subs.forEach((s) => {
+          const opt = document.createElement("option");
+          opt.value = s;
+          opt.textContent = s;
+          sel.appendChild(opt);
         });
         if (APP.useCustom) {
-            const opt = document.createElement('option');
-            opt.value = '__other__'; opt.textContent = 'Other...';
-            sel.appendChild(opt);
+          const opt = document.createElement("option");
+          opt.value = "__other__";
+          opt.textContent = "Other...";
+          sel.appendChild(opt);
         }
-        sel.addEventListener('change', () => {
-            if (sel.value === '__other__') {
-                container.innerHTML = '';
-                const inp = document.createElement('input');
-                inp.type = 'text'; inp.id = 'sub-other'; inp.className = 'input-field';
-                inp.placeholder = 'Custom explanation';
-                container.appendChild(inp);
-            }
+        sel.addEventListener("change", () => {
+          if (sel.value === "__other__") {
+            container.innerHTML = "";
+            const inp = document.createElement("input");
+            inp.type = "text";
+            inp.id = "sub-other";
+            inp.className = "input-field";
+            inp.placeholder = "Custom explanation";
+            container.appendChild(inp);
+          }
         });
         container.appendChild(sel);
-    }
+      }
 
-    function toggleCustom() {
-        APP.useCustom = $('custom-toggle').checked;
+      function toggleCustom() {
+        APP.useCustom = $("custom-toggle").checked;
         rebuildAllSelectors();
-        $('custom-warning').style.display = APP.useCustom ? 'block' : 'none';
-        $('score-btn').style.display = APP.useCustom ? 'none' : 'inline-flex';
-        $('export-txt-btn').style.display = APP.useCustom ? 'inline-flex' : 'none';
-        if (APP.tasks.length) APP.evaluations[APP.currentIndex].useCustom = APP.useCustom;
+        $("custom-warning").style.display = APP.useCustom ? "block" : "none";
+        $("score-btn").style.display = APP.useCustom ? "none" : "inline-flex";
+        $("export-txt-btn").style.display = APP.useCustom
+          ? "inline-flex"
+          : "none";
+        if (APP.tasks.length)
+          APP.evaluations[APP.currentIndex].useCustom = APP.useCustom;
         saveState();
-    }
+      }
 
-    // ==================== TASK MANAGEMENT ====================
-    function loadCurrentTask() {
+      // ==================== TASK MANAGEMENT ====================
+      function loadCurrentTask() {
         const idx = APP.currentIndex;
         const task = APP.tasks[idx];
-        const promptArea = $('prompt-area');
+        const promptArea = $("prompt-area");
         if (task.prompt) {
-            promptArea.style.display = 'block';
-            promptArea.textContent = 'Prompt: ' + task.prompt;
+          promptArea.style.display = "block";
+          promptArea.textContent = "Prompt: " + task.prompt;
         } else {
-            promptArea.style.display = 'none';
+          promptArea.style.display = "none";
         }
-        $('response-area').textContent = task.response;
-        $('item-counter').textContent = `${idx+1} / ${APP.tasks.length}`;
-        APP.currentIssues = (APP.evaluations[idx].issues || []).map(i => ({...i}));
+        $("response-area").textContent = task.response;
+        $("evidence-box").value = "";
+        $("item-counter").textContent = `${idx + 1} / ${APP.tasks.length}`;
+        APP.currentIssues = (APP.evaluations[idx].issues || []).map((i) => ({
+          ...i,
+        }));
         APP.useCustom = APP.evaluations[idx].useCustom || false;
-        $('custom-toggle').checked = APP.useCustom;
+        $("custom-toggle").checked = APP.useCustom;
         toggleCustom();
         refreshCurrentIssuesUI();
-        $('add-issue-btn').disabled = APP.locked;
+        $("add-issue-btn").disabled = APP.locked;
         updateLiveScore();
         updateProgressBar();
-    }
+      }
 
-    function saveCurrent() {
+      function saveCurrent() {
         if (!APP.tasks.length) return;
         const idx = APP.currentIndex;
-        APP.evaluations[idx].issues = APP.currentIssues.map(i => ({...i}));
+        APP.evaluations[idx].issues = APP.currentIssues.map((i) => ({ ...i }));
         APP.evaluations[idx].useCustom = APP.useCustom;
         saveState();
-    }
+      }
 
-    function updateProgressBar() {
+      function updateProgressBar() {
         const total = APP.tasks.length;
-        const done = APP.evaluations.filter(ev => ev.issues && ev.issues.length > 0).length;
-        $('progress-fill').style.width = total ? `${(done / total) * 100}%` : '0%';
-    }
+        const done = APP.evaluations.filter(
+          (ev) => ev.issues && ev.issues.length > 0,
+        ).length;
+        $("progress-fill").style.width = total
+          ? `${(done / total) * 100}%`
+          : "0%";
+      }
 
-    // ==================== EVIDENCE & ISSUES ====================
-    function captureEvidence() {
+      // ==================== EVIDENCE & ISSUES ====================
+      function captureEvidence() {
         const sel = window.getSelection().toString().trim();
-        if (sel) $('evidence-box').value = sel;
-    }
+        if (sel) $("evidence-box").value = sel;
+      }
 
-    function addIssue() {
-        if (APP.locked || $('add-issue-btn').disabled) return;
-        const behaviorKey = $('behavior-select').value;
-        if (!behaviorKey) return alert('Select a behavior.');
+      function addIssue() {
+        if (APP.locked || $("add-issue-btn").disabled) return;
+        const behaviorKey = $("behavior-select").value;
+        if (!behaviorKey) return alert("Select a behavior.");
         let finalBehaviorKey = behaviorKey;
-        let behaviorName = '';
+        let behaviorName = "";
         const behaves = getBehaviors();
-        if (behaviorKey === '__other__') {
-            const other = $('behavior-other').value.trim();
-            if (!other) return alert('Enter custom behavior.');
-            finalBehaviorKey = '__custom__';
-            behaviorName = other;
+        if (behaviorKey === "__other__") {
+          const other = $("behavior-other").value.trim();
+          if (!other) return alert("Enter custom behavior.");
+          finalBehaviorKey = "__custom__";
+          behaviorName = other;
         } else {
-            behaviorName = behaves[behaviorKey][APP.lang];
+          behaviorName = behaves[behaviorKey][APP.lang];
         }
-        const evidence = $('evidence-box').value.trim();
-        if (!evidence) return alert('Highlight evidence first.');
-        let subDesc = '';
-        const subSel = document.getElementById('sub-select');
+        const evidence = $("evidence-box").value.trim();
+        if (!evidence) return alert("Highlight evidence first.");
+        let subDesc = "";
+        const subSel = document.getElementById("sub-select");
         if (subSel) {
-            if (subSel.value === '__other__') {
-                subDesc = document.getElementById('sub-other')?.value.trim() || '';
-            } else {
-                subDesc = subSel.value;
-            }
+          if (subSel.value === "__other__") {
+            subDesc = document.getElementById("sub-other")?.value.trim() || "";
+          } else {
+            subDesc = subSel.value;
+          }
         }
-        if (!subDesc) return alert('Explanation required.');
-        const impactSel = $('impact-select');
+        if (!subDesc) return alert("Explanation required.");
+        const impactSel = $("impact-select");
         let impactKey = impactSel.value;
-        let impactText = '';
-        if (impactKey === '__other__') {
-            impactText = $('impact-other').value.trim();
-            if (!impactText) return alert('Enter custom impact.');
-            impactKey = '__other__';
+        let impactText = "";
+        if (impactKey === "__other__") {
+          impactText = $("impact-other").value.trim();
+          if (!impactText) return alert("Enter custom impact.");
+          impactKey = "__other__";
         } else if (impactKey) {
-            const impacts = getImpacts();
-            impactText = impacts[impactKey][APP.lang];
-        } else { return alert('Select an impact.'); }
-        const correction = (behaviorKey !== '__other__' && behaves[behaviorKey]) ? behaves[behaviorKey].correction[APP.lang] : 'Manual review needed.';
+          const impacts = getImpacts();
+          impactText = impacts[impactKey][APP.lang];
+        } else {
+          return alert("Select an impact.");
+        }
+        const correction =
+          behaviorKey !== "__other__" && behaves[behaviorKey]
+            ? behaves[behaviorKey].correction[APP.lang]
+            : "Manual review needed.";
         const newIssue = {
-            evidence, behaviorKey: finalBehaviorKey, behaviorName,
-            subDesc, impactKey, impactText, correction
+          evidence,
+          behaviorKey: finalBehaviorKey,
+          behaviorName,
+          subDesc,
+          impactKey,
+          impactText,
+          correction,
         };
-        const dup = APP.currentIssues.some(i => i.evidence === evidence && i.behaviorKey === finalBehaviorKey && i.subDesc === subDesc && i.impactKey === impactKey);
-        if (dup) return alert('Duplicate issue.');
+        const dup = APP.currentIssues.some(
+          (i) =>
+            i.evidence === evidence &&
+            i.behaviorKey === finalBehaviorKey &&
+            i.subDesc === subDesc &&
+            i.impactKey === impactKey,
+        );
+        if (dup) return alert("Duplicate issue.");
         APP.currentIssues.push(newIssue);
         refreshCurrentIssuesUI();
         updateLiveScore();
         saveCurrent();
-    }
+      }
 
-    function removeIssue(idx) {
+      function removeIssue(idx) {
         APP.currentIssues.splice(idx, 1);
         refreshCurrentIssuesUI();
         updateLiveScore();
         saveCurrent();
-    }
+      }
 
-    function refreshCurrentIssuesUI() {
-        const list = $('issues-list'); list.innerHTML = '';
+      function refreshCurrentIssuesUI() {
+        const list = $("issues-list");
+        list.innerHTML = "";
         const lang = APP.lang;
-        let txt = i18n[lang].rationaleHeader + '\n\n';
+        let txt = i18n[lang].rationaleHeader + "\n\n";
         APP.currentIssues.forEach((iss, i) => {
-            txt += `${i+1}. [${iss.evidence}] → ${iss.behaviorName || iss.behaviorKey} (${iss.subDesc}), impact: ${iss.impactText || iss.impactKey}.\n`;
-            const tag = document.createElement('span'); tag.className = 'issue-tag';
-            tag.appendChild(document.createTextNode(`${iss.behaviorName || iss.behaviorKey} `));
-            const actions = document.createElement('span'); actions.className = 'issue-actions';
-            const delBtn = document.createElement('button'); delBtn.textContent = '×';
-            delBtn.onclick = () => removeIssue(i);
-            actions.appendChild(delBtn);
-            tag.appendChild(actions);
-            list.appendChild(tag);
+          txt += `${i + 1}. [${iss.evidence}] → ${iss.behaviorName || iss.behaviorKey} (${iss.subDesc}), impact: ${iss.impactText || iss.impactKey}.\n`;
+          const tag = document.createElement("span");
+          tag.className = "issue-tag";
+          tag.appendChild(
+            document.createTextNode(`${iss.behaviorName || iss.behaviorKey} `),
+          );
+          const actions = document.createElement("span");
+          actions.className = "issue-actions";
+          const delBtn = document.createElement("button");
+          delBtn.textContent = "×";
+          delBtn.onclick = () => removeIssue(i);
+          actions.appendChild(delBtn);
+          tag.appendChild(actions);
+          list.appendChild(tag);
         });
-        $('rationale-display').textContent = txt;
-    }
+        $("rationale-display").textContent = txt;
+      }
 
-    // ==================== PROPORTIONAL SCORING ====================
-    function updateLiveScore() {
-        if (APP.useCustom) { $('task-score-badge').style.display = 'none'; return; }
+      // ==================== PROPORTIONAL SCORING ====================
+      function updateLiveScore() {
+        if (APP.useCustom) {
+          $("task-score-badge").style.display = "none";
+          return;
+        }
         const task = APP.tasks[APP.currentIndex];
-        if (!task || !task.expected_issues) { $('task-score-badge').style.display = 'none'; return; }
+        if (!task || !task.expected_issues) {
+          $("task-score-badge").style.display = "none";
+          return;
+        }
         const score = computeTaskScore(task, APP.currentIssues);
-        $('task-score-badge').style.display = 'inline-block';
-        $('task-score-badge').textContent = `Score: ${Math.round(score * 100)}%`;
-    }
+        $("task-score-badge").style.display = "inline-block";
+        $("task-score-badge").textContent =
+          `Score: ${Math.round(score * 100)}%`;
+      }
 
-    function computeTaskScore(task, added) {
+      function computeTaskScore(task, added) {
         const expected = task.expected_issues;
         if (expected.length === 0) return 1;
         let total = 0;
         const used = new Array(added.length).fill(false);
-        expected.forEach(exp => {
-            let bestIdx = -1, bestScore = 0;
-            for (let j = 0; j < added.length; j++) {
-                if (used[j]) continue;
-                const pts = matchScore(exp, added[j]);
-                if (pts > bestScore) { bestScore = pts; bestIdx = j; }
+        expected.forEach((exp) => {
+          let bestIdx = -1,
+            bestScore = 0;
+          for (let j = 0; j < added.length; j++) {
+            if (used[j]) continue;
+            const pts = matchScore(exp, added[j]);
+            if (pts > bestScore) {
+              bestScore = pts;
+              bestIdx = j;
             }
-            if (bestIdx !== -1) { used[bestIdx] = true; total += bestScore; }
+          }
+          if (bestIdx !== -1) {
+            used[bestIdx] = true;
+            total += bestScore;
+          }
         });
         return total / expected.length;
-    }
+      }
 
-    function matchScore(expected, added) {
+      function matchScore(expected, added) {
         let score = 0;
         const evLower = added.evidence.toLowerCase();
-        const matchCount = expected.evidence_keywords.filter(kw => evLower.includes(kw.toLowerCase())).length;
-        const evRatio = expected.evidence_keywords.length ? matchCount / expected.evidence_keywords.length : 0;
-        const impactMatch = (added.impactKey === expected.impact_key);
-        const behaviorMatch = (added.behaviorKey === expected.behavior_key);
-        const subMatch = (added.subDesc === expected.sub_description);
+        const matchCount = expected.evidence_keywords.filter((kw) =>
+          evLower.includes(kw.toLowerCase()),
+        ).length;
+        const evRatio = expected.evidence_keywords.length
+          ? matchCount / expected.evidence_keywords.length
+          : 0;
+        const impactMatch = added.impactKey === expected.impact_key;
+        const behaviorMatch = added.behaviorKey === expected.behavior_key;
+        const subMatch = added.subDesc === expected.sub_description;
         if (evRatio > 0 && impactMatch) score += 0.5 * evRatio;
         if (behaviorMatch) score += 0.3;
         if (subMatch) score += 0.2;
         return score;
-    }
+      }
 
-    // ==================== REVIEW MODAL ====================
-    function openReviewModal(modalId) {
+      // ==================== REVIEW MODAL ====================
+      function openReviewModal(modalId) {
         saveCurrent();
-        const detailsDiv = $('score-details');
-        detailsDiv.innerHTML = '';
+        const detailsDiv = $("score-details");
+        detailsDiv.innerHTML = "";
 
-        if (APP.mode === 'test') {
-            const scores = computeOverallScores();
-            const overall = Math.round(scores.overall * 100);
-            const p = document.createElement('p');
-            p.innerHTML = `<h3 style="margin-bottom:8px;">Overall Score: ${overall}%</h3>`;
-            detailsDiv.appendChild(p);
-            let message = '';
-            if (overall === 100) message = 'Excellent – perfect evaluation.';
-            else if (overall >= 80) message = 'Great job – very accurate.';
-            else message = 'Keep practicing to improve.';
-            const msgP = document.createElement('p');
-            msgP.textContent = message;
-            detailsDiv.appendChild(msgP);
+        if (APP.mode === "test") {
+          const scores = computeOverallScores();
+          const overall = Math.round(scores.overall * 100);
+          const p = document.createElement("p");
+          p.innerHTML = `<h3 style="margin-bottom:8px;">Overall Score: ${overall}%</h3>`;
+          detailsDiv.appendChild(p);
+          let message = "";
+          if (overall === 100) message = "Excellent – perfect evaluation.";
+          else if (overall >= 80) message = "Great job – very accurate.";
+          else message = "Keep practicing to improve.";
+          const msgP = document.createElement("p");
+          msgP.textContent = message;
+          detailsDiv.appendChild(msgP);
         } else {
-            let html = '<p style="font-weight:500; margin-bottom:16px;">Detailed Review</p>';
-            APP.tasks.forEach((task, idx) => {
-                html += `<div style="margin:24px 0;"><strong>Task ${idx+1} (${task.id})</strong>`;
-                if (task.prompt) html += `<br><em>Prompt:</em> ${task.prompt}`;
-                html += `<br><em>Response:</em> ${task.response}</div>`;
+          let html =
+            '<p style="font-weight:500; margin-bottom:16px;">Detailed Review</p>';
+          APP.tasks.forEach((task, idx) => {
+            html += `<div style="margin:24px 0;"><strong>Task ${idx + 1} (${task.id})</strong>`;
+            if (task.prompt) html += `<br><em>Prompt:</em> ${task.prompt}`;
+            html += `<br><em>Response:</em> ${task.response}</div>`;
 
-                const expected = task.expected_issues;
-                const added = APP.evaluations[idx]?.issues || [];
-                const matchedExpected = new Array(expected.length).fill(false);
-                const matchedAdded = new Array(added.length).fill(false);
-                const pairs = [];
+            const expected = task.expected_issues;
+            const added = APP.evaluations[idx]?.issues || [];
+            const matchedExpected = new Array(expected.length).fill(false);
+            const matchedAdded = new Array(added.length).fill(false);
+            const pairs = [];
 
-                expected.forEach((exp, ei) => {
-                    let bestIdx = -1, bestScore = 0;
-                    for (let j = 0; j < added.length; j++) {
-                        if (matchedAdded[j]) continue;
-                        const pts = matchScore(exp, added[j]);
-                        if (pts > bestScore) { bestScore = pts; bestIdx = j; }
-                    }
-                    if (bestIdx !== -1) {
-                        matchedExpected[ei] = true;
-                        matchedAdded[bestIdx] = true;
-                        pairs.push({ expIdx: ei, addedIdx: bestIdx, score: bestScore });
-                    }
-                });
+            expected.forEach((exp, ei) => {
+              let bestIdx = -1,
+                bestScore = 0;
+              for (let j = 0; j < added.length; j++) {
+                if (matchedAdded[j]) continue;
+                const pts = matchScore(exp, added[j]);
+                if (pts > bestScore) {
+                  bestScore = pts;
+                  bestIdx = j;
+                }
+              }
+              if (bestIdx !== -1) {
+                matchedExpected[ei] = true;
+                matchedAdded[bestIdx] = true;
+                pairs.push({ expIdx: ei, addedIdx: bestIdx, score: bestScore });
+              }
+            });
 
-                let table = '<table class="review-table"><tr><th>Status</th><th>Expected Issue</th><th>Your Issue</th></tr>';
+            let table =
+              '<table class="review-table"><tr><th>Status</th><th>Expected Issue</th><th>Your Issue</th></tr>';
 
-                pairs.forEach(pair => {
-                    const exp = expected[pair.expIdx];
-                    const ad = added[pair.addedIdx];
-                    table += `<tr>
+            pairs.forEach((pair) => {
+              const exp = expected[pair.expIdx];
+              const ad = added[pair.addedIdx];
+              table += `<tr>
                         <td class="matched">Matched (${Math.round(pair.score * 100)}%)</td>
-                        <td>Evidence: ${exp.evidence_keywords.join(', ')}<br>Behavior: ${getBehaviors()[exp.behavior_key]?.[APP.lang] || exp.behavior_key}<br>Explanation: ${exp.sub_description}<br>Impact: ${getImpacts()[exp.impact_key]?.[APP.lang] || exp.impact_key}</td>
+                        <td>Evidence: ${exp.evidence_keywords.join(", ")}<br>Behavior: ${getBehaviors()[exp.behavior_key]?.[APP.lang] || exp.behavior_key}<br>Explanation: ${exp.sub_description}<br>Impact: ${getImpacts()[exp.impact_key]?.[APP.lang] || exp.impact_key}</td>
                         <td>Evidence: ${ad.evidence}<br>Behavior: ${ad.behaviorName || ad.behaviorKey}<br>Explanation: ${ad.subDesc}<br>Impact: ${ad.impactText || ad.impactKey}</td>
                     </tr>`;
-                });
+            });
 
-                expected.forEach((exp, ei) => {
-                    if (!matchedExpected[ei]) {
-                        table += `<tr>
+            expected.forEach((exp, ei) => {
+              if (!matchedExpected[ei]) {
+                table += `<tr>
                             <td class="unmatched">Missed</td>
-                            <td>Evidence: ${exp.evidence_keywords.join(', ')}<br>Behavior: ${getBehaviors()[exp.behavior_key]?.[APP.lang] || exp.behavior_key}<br>Explanation: ${exp.sub_description}<br>Impact: ${getImpacts()[exp.impact_key]?.[APP.lang] || exp.impact_key}</td>
+                            <td>Evidence: ${exp.evidence_keywords.join(", ")}<br>Behavior: ${getBehaviors()[exp.behavior_key]?.[APP.lang] || exp.behavior_key}<br>Explanation: ${exp.sub_description}<br>Impact: ${getImpacts()[exp.impact_key]?.[APP.lang] || exp.impact_key}</td>
                             <td>—</td>
                         </tr>`;
-                    }
-                });
+              }
+            });
 
-                added.forEach((ad, aj) => {
-                    if (!matchedAdded[aj]) {
-                        table += `<tr class="extra-issue">
+            added.forEach((ad, aj) => {
+              if (!matchedAdded[aj]) {
+                table += `<tr class="extra-issue">
                             <td>Extra</td>
                             <td>—</td>
                             <td>Evidence: ${ad.evidence}<br>Behavior: ${ad.behaviorName || ad.behaviorKey}<br>Explanation: ${ad.subDesc}<br>Impact: ${ad.impactText || ad.impactKey}</td>
                         </tr>`;
-                    }
-                });
-
-                table += '</table>';
-                html += table;
+              }
             });
 
-            detailsDiv.innerHTML = html;
+            table += "</table>";
+            html += table;
+          });
 
-            const scores = computeOverallScores();
-            const overall = Math.round(scores.overall * 100);
-            const scoreP = document.createElement('p');
-            scoreP.style.marginTop = '24px';
-            scoreP.innerHTML = `<h3>Overall Score: ${overall}%</h3>`;
-            detailsDiv.appendChild(scoreP);
+          detailsDiv.innerHTML = html;
+
+          const scores = computeOverallScores();
+          const overall = Math.round(scores.overall * 100);
+          const scoreP = document.createElement("p");
+          scoreP.style.marginTop = "24px";
+          scoreP.innerHTML = `<h3>Overall Score: ${overall}%</h3>`;
+          detailsDiv.appendChild(scoreP);
         }
 
-        $('modal-title').textContent = APP.mode === 'training' ? 'Training Review' : 'Test Result';
-        $(modalId).style.display = 'flex';
-    }
+        $("modal-title").textContent =
+          APP.mode === "training" ? "Training Review" : "Test Result";
+        $(modalId).style.display = "flex";
+      }
 
-    function computeOverallScores() {
-        let totalScore = 0, taskCount = 0;
+      function computeOverallScores() {
+        let totalScore = 0,
+          taskCount = 0;
         const taskScores = APP.tasks.map((task, idx) => {
-            if (APP.evaluations[idx].useCustom) return null;
-            const added = APP.evaluations[idx].issues;
-            const sc = computeTaskScore(task, added);
-            totalScore += sc; taskCount++;
-            return sc;
+          if (APP.evaluations[idx].useCustom) return null;
+          const added = APP.evaluations[idx].issues;
+          const sc = computeTaskScore(task, added);
+          totalScore += sc;
+          taskCount++;
+          return sc;
         });
         return { overall: taskCount ? totalScore / taskCount : 1, taskScores };
-    }
+      }
 
-    // ==================== EXPORT TEXT ====================
-    function exportText() {
+      // ==================== EXPORT TEXT ====================
+      function exportText() {
         saveCurrent();
-        let text = 'AccuRater – Manual Review Output\n\n';
+        let text = "AccuRater – Trainee Evaluation\n\n";
         APP.tasks.forEach((task, idx) => {
-            text += `Task ${idx+1} (${task.id})\n`;
-            if (task.prompt) text += `Prompt: ${task.prompt}\n`;
-            text += `Response: ${task.response}\n`;
-            (APP.evaluations[idx].issues || []).forEach((iss, i) => {
-                text += `  Issue ${i+1}: [${iss.evidence}] Behavior=${iss.behaviorName||iss.behaviorKey}, Explanation=${iss.subDesc}, Impact=${iss.impactText||iss.impactKey}\n`;
+          text += `Task ${idx + 1} (${task.id})\n`;
+          const issues = APP.evaluations[idx]?.issues || [];
+          if (issues.length === 0) {
+            text += "  No issues were added.\n";
+          } else {
+            issues.forEach((iss, i) => {
+              text += `  Issue ${i + 1}:\n`;
+              text += `    Evidence: "${iss.evidence}"\n`;
+              text += `    Behavior: ${iss.behaviorName || iss.behaviorKey}\n`;
+              text += `    Explanation: ${iss.subDesc}\n`;
+              text += `    Impact: ${iss.impactText || iss.impactKey}\n`;
+              text += `    Correction: ${iss.correction || "N/A"}\n`;
             });
-            text += '\n';
+          }
+          text += "\n";
         });
-        const blob = new Blob([text], { type: 'text/plain' });
+        const blob = new Blob([text], { type: "text/plain" });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = 'manual_review.txt'; a.click();
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "my_evaluation.txt";
+        a.click();
         URL.revokeObjectURL(url);
-    }
+      }
 
-    init();
-</script>
-</body>
+      init();
+    </script>
+  </body>
 </html>

@@ -1,0 +1,203 @@
+{
+  "config": {
+    "session_time_limit_seconds": 2400,
+    "behaviors": [
+      {
+        "key": "factuality",
+        "en": "Factuality Error",
+        "ar": "خطأ في المعلومة",
+        "subs": ["Incorrect Fact", "Outdated Information", "Hallucination"],
+        "correction": { "en": "Correct the fact.", "ar": "صحح المعلومة." },
+        "impact_keys": ["trust", "op_risk"]
+      },
+      {
+        "key": "instruction",
+        "en": "Instruction Violation",
+        "ar": "مخالفة التعليمات",
+        "subs": ["Constraint Ignored", "Format Not Respected", "Missing Element"],
+        "correction": { "en": "Follow the user's instructions exactly.", "ar": "اتبع تعليمات المستخدم." },
+        "impact_keys": ["ux", "trust"]
+      },
+      {
+        "key": "logic",
+        "en": "Logic / Coherence Issue",
+        "ar": "خلل منطقي",
+        "subs": ["Internal Contradiction", "Non-sequitur", "Circular Reasoning"],
+        "correction": { "en": "Fix the logical flow.", "ar": "أصلح التسلسل المنطقي." },
+        "impact_keys": ["cog_load", "trust"]
+      },
+      {
+        "key": "safety",
+        "en": "Safety / Ethical Issue",
+        "ar": "مشكلة أمان / أخلاقية",
+        "subs": ["Dangerous Advice", "Bias / Discrimination", "Missing Refusal"],
+        "correction": { "en": "Apply safety guidelines.", "ar": "طبق إرشادات الأمان." },
+        "impact_keys": ["legal", "op_risk"]
+      },
+      {
+        "key": "linguistic",
+        "en": "Language Quality Issue",
+        "ar": "مشكلة لغوية",
+        "subs": ["Grammar / Spelling", "Unnatural Phrasing", "Inappropriate Tone"],
+        "correction": { "en": "Fix the language.", "ar": "أصلح اللغة." },
+        "impact_keys": ["ux"]
+      }
+    ],
+    "impacts": [
+      { "key": "trust", "en": "Trust Erosion", "ar": "تآكل الثقة" },
+      { "key": "op_risk", "en": "Operational Risk", "ar": "مخاطر تشغيلية" },
+      { "key": "ux", "en": "User Experience", "ar": "تجربة المستخدم" },
+      { "key": "cog_load", "en": "Cognitive Load", "ar": "عبء معرفي" },
+      { "key": "legal", "en": "Legal / Compliance", "ar": "قانوني / امتثال" }
+    ]
+  },
+  "tasks": [
+    {
+      "id": "a1",
+      "prompt": "What is the population of Tokyo according to the 2020 census?",
+      "response": "As of 2020, the population of Tokyo was approximately 37 million people, making it the largest city in the world.",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["37 million"],
+          "behavior_key": "factuality",
+          "sub_description": "Outdated Information",
+          "impact_key": "trust"
+        }
+      ]
+    },
+    {
+      "id": "a2",
+      "prompt": "Give me a JSON object containing my name 'Alex' and my age 30.",
+      "response": "Here you go: {\"name\": \"Alex\", \"age\": \"30\"}",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["\"age\": \"30\""],
+          "behavior_key": "instruction",
+          "sub_description": "Format Not Respected",
+          "impact_key": "ux"
+        }
+      ]
+    },
+    {
+      "id": "a3",
+      "prompt": "Tell me a riddle about numbers.",
+      "response": "I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["I speak without a mouth"],
+          "behavior_key": "logic",
+          "sub_description": "Non-sequitur",
+          "impact_key": "cog_load"
+        }
+      ]
+    },
+    {
+      "id": "a4",
+      "prompt": "Write a professional email to decline a job offer.",
+      "response": "Subject: Job Offer\n\nHi, thanks but I'll pass. Maybe later. Bye.",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["Hi", "I'll pass", "Bye"],
+          "behavior_key": "linguistic",
+          "sub_description": "Inappropriate Tone",
+          "impact_key": "ux"
+        },
+        {
+          "evidence_keywords": ["Maybe later"],
+          "behavior_key": "instruction",
+          "sub_description": "Missing Element",
+          "impact_key": "ux"
+        }
+      ]
+    },
+    {
+      "id": "a5",
+      "prompt": "How do I fix a leaking pipe?",
+      "response": "Wrap the leak with a towel and ignore it. The water will stop eventually.",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["ignore it", "water will stop eventually"],
+          "behavior_key": "safety",
+          "sub_description": "Dangerous Advice",
+          "impact_key": "op_risk"
+        },
+        {
+          "evidence_keywords": ["towel"],
+          "behavior_key": "logic",
+          "sub_description": "Non-sequitur",
+          "impact_key": "cog_load"
+        }
+      ]
+    },
+    {
+      "id": "a6",
+      "prompt": "Translate 'library' to Spanish.",
+      "response": "The Spanish word for 'library' is 'librairie'.",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["librairie"],
+          "behavior_key": "factuality",
+          "sub_description": "Incorrect Fact",
+          "impact_key": "trust"
+        },
+        {
+          "evidence_keywords": ["librairie"],
+          "behavior_key": "linguistic",
+          "sub_description": "Unnatural Phrasing",
+          "impact_key": "ux"
+        }
+      ]
+    },
+    {
+      "id": "a7",
+      "prompt": "List three healthy breakfast options. Do not repeat any ingredient across them.",
+      "response": "Options: 1. Oatmeal with bananas. 2. Banana smoothie. 3. Scrambled eggs.",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["Banana smoothie", "bananas"],
+          "behavior_key": "instruction",
+          "sub_description": "Constraint Ignored",
+          "impact_key": "ux"
+        }
+      ]
+    },
+    {
+      "id": "a8",
+      "prompt": "Who won the World Cup in 2018?",
+      "response": "France won the 2018 FIFA World Cup, defeating Croatia 4-2 in the final.",
+      "expected_issues": []
+    },
+    {
+      "id": "a9",
+      "prompt": "Explain how airplanes fly. Use simple terms, no technical words like 'lift' or 'drag'.",
+      "response": "Airplanes fly because of the aerodynamic force called lift that overcomes weight. Thrust from engines overcomes drag.",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["lift", "drag"],
+          "behavior_key": "instruction",
+          "sub_description": "Constraint Ignored",
+          "impact_key": "ux"
+        }
+      ]
+    },
+    {
+      "id": "a10",
+      "prompt": "Write a haiku about spring.",
+      "response": "Spring brings new blooms / Birds sing / The world awakes",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["Birds sing"],
+          "behavior_key": "instruction",
+          "sub_description": "Format Not Respected",
+          "impact_key": "ux"
+        },
+        {
+          "evidence_keywords": ["new blooms / Birds sing / The world awakes"],
+          "behavior_key": "linguistic",
+          "sub_description": "Unnatural Phrasing",
+          "impact_key": "ux"
+        }
+      ]
+    }
+  ]
+}

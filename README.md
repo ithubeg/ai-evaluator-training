@@ -3,6 +3,12 @@ Made with ❤️ by [Mohamed Ali Maher] – let’s connect on LinkedIn.
 
 **Train yourself to evaluate AI responses like a professional.**
 
+
+
+![enter image description here](https://raw.githubusercontent.com/ithubeg/ai-evaluator-training/refs/heads/main/AccuRater-logo.png)
+
+
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Live Demo](https://img.shields.io/badge/demo-live-blue)]([https://your-project.pages.dev](https://ai-evaluator-training.advertcore.workers.dev/))
 

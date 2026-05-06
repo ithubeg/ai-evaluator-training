@@ -1,4 +1,5 @@
-# 🎓 AI Evaluator – Training Edition
+# 🎓 Almaher AI Evaluator – Training Edition
+Made with ❤️ by [Mohamed Ali Maher] – let’s connect on LinkedIn.
 
 **Train yourself to evaluate AI responses like a professional.**
 

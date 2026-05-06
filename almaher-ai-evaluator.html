@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Evaluator â€“ Training &amp; Test Modes</title>
+    <style>
+        :root {
+            --primary: #2563eb; --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+            --bg: #f8fafc; --card: #fff; --text: #1e293b; --border: #e2e8f0;
+            --radius: 12px; --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg); color: var(--text); padding: 20px; transition: 0.3s;
+        }
+        body.rtl { direction: rtl; }
+        .header, .card {
+            background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+            padding: 20px; margin-bottom: 20px;
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .btn {
+            cursor: pointer; border: none; font-weight: 600; padding: 10px 20px;
+            border-radius: 8px; background: #e2e8f0; color: var(--text); font-size: 0.9rem;
+            display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .input-field, select, textarea {
+            width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;
+            font-size: 0.95rem; background: white; margin: 5px 0;
+        }
+        .flex-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 400px; gap: 20px; }
+        #response-area {
+            background: #f1f5f9; border: 2px dashed var(--border); padding: 15px; border-radius: 8px;
+            min-height: 200px; max-height: 400px; overflow-y: auto; white-space: pre-wrap;
+            line-height: 1.6; font-size: 1rem; user-select: text;
+        }
+        #prompt-area {
+            background: #e0f2fe; padding: 12px; border-radius: 8px; margin-bottom: 10px;
+            font-style: italic; color: #0c4a6e;
+        }
+        .rationale-box {
+            background: #1e293b; color: #34d399; padding: 15px; border-radius: 8px;
+            font-family: monospace; white-space: pre-wrap; min-height: 60px;
+        }
+        .issue-tag {
+            display: inline-block; background: #fee2e2; color: #991b1b;
+            padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; margin: 3px;
+        }
+        .issue-actions button {
+            background: none; border: none; color: #991b1b; cursor: pointer; margin-left: 5px;
+        }
+        .timer-big {
+            font-size: 2rem; font-weight: bold; color: var(--danger);
+            background: #fee2e2; padding: 5px 15px; border-radius: 8px;
+        }
+        .warning-banner {
+            background: #fee2e2; color: #b91c1c; padding: 10px; border-radius: 8px;
+            margin: 10px 0; font-weight: bold;
+        }
+        .score-badge {
+            font-weight: bold; padding: 5px 12px; border-radius: 20px;
+            background: #dcfce7; color: #166534;
+        }
+        .modal-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:1000;
+        }
+        .modal-content {
+            background: white; border-radius: var(--radius); padding: 30px;
+            max-width: 800px; width:90%; max-height:80vh; overflow-y:auto; text-align: left;
+        }
+        #progress-bar {
+            width: 100%; height: 10px; background: #e2e8f0; border-radius: 5px; margin: 10px 0;
+        }
+        #progress-fill {
+            height: 100%; background: var(--primary); border-radius: 5px; width: 0%;
+        }
+        .review-table { width:100%; border-collapse:collapse; margin-top:15px; }
+        .review-table th, .review-table td {
+            border:1px solid #e2e8f0; padding:8px; text-align:left; vertical-align:top;
+        }
+        .review-table th { background:#f1f5f9; }
+        .matched { color: var(--success); font-weight:bold; }
+        .unmatched { color: var(--danger); }
+        .extra-issue { background: #fef9c3; }
+        .task-list-item {
+            padding: 10px; border-bottom: 1px solid var(--border); cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .task-list-item:hover { background: #f1f5f9; }
+        @media (max-width: 800px) { .container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<!-- INTRO SCREEN -->
+<div id="intro-screen" class="card" style="max-width:650px; margin:50px auto; text-align:center;">
+    <h1>ðŸŽ“ AI Evaluator</h1>
+    <p>Choose mode and upload training JSON file.</p>
+    <div class="flex-row" style="justify-content:center; margin:20px 0;">
+        <label><input type="radio" name="mode" value="training" checked> ðŸŽ“ Training mode</label>
+        <label><input type="radio" name="mode" value="test"> ðŸ“ Test mode</label>
+    </div>
+    <input type="file" id="training-file" accept=".json" class="input-field" style="width:auto; display:inline-block; margin-top:20px;">
+    <p style="margin-top:15px;">
+        <a href="#" id="download-sample-link">ðŸ“¥ Download sample (5 tasks with prompts)</a>
+    </p>
+</div>
+
+<!-- WORK AREA -->
+<div id="work-area" style="display:none;">
+    <div class="header">
+        <div class="flex-row">
+            <h1 id="mode-title">ðŸŽ“ Training</h1>
+            <span id="session-timer" class="timer-big">â³ 00:00</span>
+            <span id="task-score-badge" class="score-badge" style="display:none;">Score: -</span>
+        </div>
+        <div class="flex-row">
+            <select id="lang-switcher" class="input-field" style="width:auto;">
+                <option value="en">English</option>
+                <option value="ar">Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©</option>
+            </select>
+            <button id="home-btn" class="btn" title="Return to start">ðŸ  Home</button>
+            <button id="history-btn" class="btn" title="Task history">ðŸ“‹ History</button>
+            <button id="prev-btn" class="btn">â—€</button>
+            <span id="item-counter">0 / 0</span>
+            <button id="next-btn" class="btn">â–¶</button>
+            <button id="score-btn" class="btn btn-primary">ðŸ“Š Show Score</button>
+            <button id="export-txt-btn" class="btn btn-primary" style="display:none;">ðŸ“„ Export Text</button>
+        </div>
+    </div>
+
+    <div id="progress-bar"><div id="progress-fill"></div></div>
+
+    <div class="container">
+        <div>
+            <div class="card">
+                <div id="prompt-area" style="display:none;"></div>
+                <h2 id="lbl-response">Response Content</h2>
+                <div id="response-area"></div>
+                <small>Highlight the problematic sentence.</small>
+            </div>
+            <div class="card">
+                <h2 id="lbl-rationale">Your Issues</h2>
+                <div id="rationale-display" class="rationale-box"></div>
+            </div>
+        </div>
+        <div>
+            <div class="card">
+                <h2 id="lbl-quiz">Issue Editor</h2>
+                <label style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                    <input type="checkbox" id="custom-toggle">
+                    <span style="font-weight:bold;">ðŸ”“ Custom entries (no autoâ€‘scoring)</span>
+                </label>
+                <div id="custom-warning" class="warning-banner" style="display:none;">
+                    âš ï¸ Custom mode: scoring disabled. You can export a text file for manual review.
+                </div>
+                <label id="lbl-evidence">Evidence:</label>
+                <textarea id="evidence-box" rows="2" readonly class="input-field"></textarea>
+                <label id="lbl-behavior">Behavior:</label>
+                <select id="behavior-select" class="input-field"></select>
+                <div id="behavior-other-area" style="display:none;">
+                    <input type="text" id="behavior-other" class="input-field" placeholder="Custom behavior">
+                </div>
+                <label id="lbl-sub">Sub-Description:</label>
+                <div id="sub-input-area"></div>
+                <label id="lbl-impact">Impact:</label>
+                <select id="impact-select" class="input-field"></select>
+                <div id="impact-other-area" style="display:none;">
+                    <input type="text" id="impact-other" class="input-field" placeholder="Custom impact">
+                </div>
+                <button id="add-issue-btn" class="btn btn-primary" style="width:100%; margin-top:10px;">Add Issue</button>
+            </div>
+            <div class="card">
+                <h2 id="lbl-history">Issues List</h2>
+                <div id="issues-list" style="min-height:30px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SCORE / REVIEW MODAL -->
+<div id="score-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+        <span style="float:right; cursor:pointer; font-size:1.5rem;" onclick="closeModal('score-modal')">&times;</span>
+        <h2 id="modal-title">ðŸ“Š Your Performance</h2>
+        <div id="score-details"></div>
+        <button class="btn btn-primary" onclick="closeModal('score-modal')">OK</button>
+    </div>
+</div>
+
+<!-- TASK HISTORY MODAL -->
+<div id="history-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content" style="max-width:500px;">
+        <span style="float:right; cursor:pointer; font-size:1.5rem;" onclick="closeModal('history-modal')">&times;</span>
+        <h2>ðŸ“‹ Task History</h2>
+        <div id="task-list-container"></div>
+    </div>
+</div>
+
+<script>
+    // ==================== APP STATE ====================
+    const APP = {
+        lang: 'en',
+        mode: 'training',
+        config: null,
+        tasks: [],
+        evaluations: [],
+        currentIndex: 0,
+        currentIssues: [],
+        useCustom: false,
+        timeRemaining: 0,
+        timerInterval: null,
+        locked: false,
+        sessionLoadTime: null,
+    };
+
+    const i18n = {
+        en: {
+            response:"Response Content", quiz:"Issue Editor", rationale:"Your Issues",
+            evidence:"Evidence:", behavior:"Behavior:", sub:"Sub-Description:",
+            impact:"Impact:", add:"Add Issue", history:"Issues List",
+            rationaleHeader:"Your evaluation:"
+        },
+        ar: {
+            response:"Ù…Ø­ØªÙˆÙ‰ Ø§Ù„Ø§Ø³ØªØ¬Ø§Ø¨Ø©", quiz:"Ù…Ø­Ø±Ø± Ø§Ù„Ù…Ø´ÙƒÙ„Ø©", rationale:"Ù…Ø´Ø§ÙƒÙ„Ùƒ",
+            evidence:"Ø§Ù„Ø¯Ù„ÙŠÙ„:", behavior:"Ø§Ù„Ø³Ù„ÙˆÙƒ:", sub:"Ø§Ù„ÙˆØµÙ Ø§Ù„Ø¯Ù‚ÙŠÙ‚:",
+            impact:"Ø§Ù„Ø£Ø«Ø±:", add:"Ø£Ø¶Ù Ù…Ø´ÙƒÙ„Ø©", history:"Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ù…Ø´Ø§ÙƒÙ„",
+            rationaleHeader:"ØªÙ‚ÙŠÙŠÙ…Ùƒ:"
+        }
+    };
+
+    const STORAGE_KEY = 'ai_evaluator_v8';
+
+    // ==================== HELPERS ====================
+    const $ = (id) => document.getElementById(id);
+    const getBehaviors = () => APP.config?.behaviors ? Object.fromEntries(APP.config.behaviors.map(b => [b.key, b])) : {};
+    const getImpacts = () => APP.config?.impacts ? Object.fromEntries(APP.config.impacts.map(i => [i.key, i])) : {};
+
+    function saveState() {
+        const state = {
+            lang: APP.lang,
+            mode: APP.mode,
+            config: APP.config,
+            tasks: APP.tasks,
+            evaluations: APP.evaluations,
+            currentIndex: APP.currentIndex,
+            useCustom: APP.useCustom,
+            timeRemaining: APP.timeRemaining,
+            locked: APP.locked,
+            sessionLoadTime: APP.sessionLoadTime,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadState() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return false;
+        try {
+            const state = JSON.parse(saved);
+            if (!state.config || !state.tasks) return false;
+            APP.lang = state.lang || 'en';
+            APP.mode = state.mode || 'training';
+            APP.config = state.config;
+            APP.tasks = state.tasks;
+            APP.evaluations = state.evaluations || [];
+            APP.currentIndex = state.currentIndex || 0;
+            APP.useCustom = state.useCustom || false;
+            APP.timeRemaining = state.timeRemaining || 0;
+            APP.locked = state.locked || false;
+            APP.sessionLoadTime = state.sessionLoadTime || Date.now();
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    // ==================== INIT ====================
+    function init() {
+        $('training-file').addEventListener('change', loadFile);
+        $('download-sample-link').addEventListener('click', downloadSample);
+        $('lang-switcher').addEventListener('change', switchLang);
+        $('prev-btn').addEventListener('click', () => { saveCurrent(); if (APP.currentIndex > 0) { APP.currentIndex--; loadCurrentTask(); } });
+        $('next-btn').addEventListener('click', () => { saveCurrent(); if (APP.currentIndex < APP.tasks.length-1) { APP.currentIndex++; loadCurrentTask(); } });
+        $('home-btn').addEventListener('click', goHome);
+        $('history-btn').addEventListener('click', openTaskHistory);
+        $('behavior-select').addEventListener('change', onBehaviorChange);
+        $('add-issue-btn').addEventListener('click', addIssue);
+        $('custom-toggle').addEventListener('change', toggleCustom);
+        $('score-btn').addEventListener('click', () => openReviewModal('score-modal'));
+        $('export-txt-btn').addEventListener('click', exportText);
+        $('response-area').addEventListener('mouseup', captureEvidence);
+        updateUILanguage();
+        document.addEventListener('keydown', handleKeyboard);
+
+        // Restore session if exists
+        const restored = loadState();
+        if (restored) {
+            document.querySelector(`input[name="mode"][value="${APP.mode}"]`).checked = true;
+            $('intro-screen').style.display = 'none';
+            $('work-area').style.display = 'block';
+            $('mode-title').textContent = APP.mode === 'training' ? 'ðŸŽ“ Training' : 'ðŸ“ Test';
+            rebuildAllSelectors();
+            loadCurrentTask();
+            startSessionTimer();
+        }
+    }
+
+    function goHome() {
+        // Stop timer and return to intro screen
+        if (APP.timerInterval) {
+            clearInterval(APP.timerInterval);
+            APP.timerInterval = null;
+        }
+        $('work-area').style.display = 'none';
+        $('intro-screen').style.display = 'block';
+        // Note: we do NOT clear localStorage; it can be resumed by loading same file again
+    }
+
+    function openTaskHistory() {
+        const container = $('task-list-container');
+        container.innerHTML = '';
+        APP.tasks.forEach((task, idx) => {
+            const div = document.createElement('div');
+            div.className = 'task-list-item';
+            const issuesCount = (APP.evaluations[idx]?.issues || []).length;
+            div.innerHTML = `<span>${idx+1}. ${task.id} (${issuesCount} issues)</span><span style="color:var(--primary);">â†’</span>`;
+            div.addEventListener('click', () => {
+                closeModal('history-modal');
+                saveCurrent();
+                APP.currentIndex = idx;
+                loadCurrentTask();
+            });
+            container.appendChild(div);
+        });
+        $('history-modal').style.display = 'flex';
+    }
+
+    function closeModal(modalId) {
+        $(modalId).style.display = 'none';
+    }
+
+    // Mode selection
+    document.querySelectorAll('input[name="mode"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            APP.mode = this.value;
+        });
+    });
+
+    function updateUILanguage() {
+        const t = i18n[APP.lang];
+        ['lbl-response','lbl-quiz','lbl-rationale','lbl-evidence','lbl-behavior','lbl-sub','lbl-impact','lbl-history'].forEach(id => $(id).textContent = t[id.replace('lbl-','')]);
+        $('add-issue-btn').textContent = t.add;
+        document.body.classList.toggle('rtl', APP.lang==='ar');
+    }
+
+    function switchLang() {
+        APP.lang = $('lang-switcher').value;
+        updateUILanguage();
+        rebuildAllSelectors();
+        refreshCurrentIssuesUI();
+        saveState();
+    }
+
+    function handleKeyboard(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowRight') { $('next-btn').click(); }
+        else if (e.key === 'ArrowLeft') { $('prev-btn').click(); }
+        else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { $('add-issue-btn').click(); }
+    }
+
+    // ==================== SAMPLE DOWNLOAD ====================
+    function downloadSample() {
+        const sample = {
+            config: {
+                session_time_limit_seconds: 900,
+                behaviors: [
+                    { key: "factuality", en: "Factuality Error", ar: "Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ù…Ø¹Ù„ÙˆÙ…Ø©", subs: ["Incorrect Fact","Outdated Information","Hallucination"], correction:{"en":"Correct the fact.","ar":"ØµØ­Ø­ Ø§Ù„Ù…Ø¹Ù„ÙˆÙ…Ø©."}, impact_keys:["trust","op_risk"] },
+                    { key: "instruction", en: "Instruction Violation", ar: "Ù…Ø®Ø§Ù„ÙØ© Ø§Ù„ØªØ¹Ù„ÙŠÙ…Ø§Øª", subs: ["Constraint Ignored","Format Not Respected","Missing Element"], correction:{"en":"Follow the user's instructions exactly.","ar":"Ø§ØªØ¨Ø¹ ØªØ¹Ù„ÙŠÙ…Ø§Øª Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…."}, impact_keys:["ux","trust"] },
+                    { key: "logic", en: "Logic / Coherence Issue", ar: "Ø®Ù„Ù„ Ù…Ù†Ø·Ù‚ÙŠ", subs: ["Internal Contradiction","Non-sequitur","Circular Reasoning"], correction:{"en":"Fix the logical flow.","ar":"Ø£ØµÙ„Ø­ Ø§Ù„ØªØ³Ù„Ø³Ù„ Ø§Ù„Ù…Ù†Ø·Ù‚ÙŠ."}, impact_keys:["cog_load","trust"] },
+                    { key: "safety", en: "Safety / Ethical Issue", ar: "Ù…Ø´ÙƒÙ„Ø© Ø£Ù…Ø§Ù† / Ø£Ø®Ù„Ø§Ù‚ÙŠØ©", subs: ["Dangerous Advice","Bias / Discrimination","Missing Refusal"], correction:{"en":"Apply safety guidelines.","ar":"Ø·Ø¨Ù‚ Ø¥Ø±Ø´Ø§Ø¯Ø§Øª Ø§Ù„Ø£Ù…Ø§Ù†."}, impact_keys:["legal","op_risk"] },
+                    { key: "linguistic", en: "Language Quality Issue", ar: "Ù…Ø´ÙƒÙ„Ø© Ù„ØºÙˆÙŠØ©", subs: ["Grammar / Spelling","Unnatural Phrasing","Inappropriate Tone"], correction:{"en":"Fix the language.","ar":"Ø£ØµÙ„Ø­ Ø§Ù„Ù„ØºØ©."}, impact_keys:["ux"] }
+                ],
+                impacts: [
+                    { key:"trust", en:"Trust Erosion", ar:"ØªØ¢ÙƒÙ„ Ø§Ù„Ø«Ù‚Ø©" },
+                    { key:"op_risk", en:"Operational Risk", ar:"Ù…Ø®Ø§Ø·Ø± ØªØ´ØºÙŠÙ„ÙŠØ©" },
+                    { key:"ux", en:"User Experience", ar:"ØªØ¬Ø±Ø¨Ø© Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…" },
+                    { key:"cog_load", en:"Cognitive Load", ar:"Ø¹Ø¨Ø¡ Ù…Ø¹Ø±ÙÙŠ" },
+                    { key:"legal", en:"Legal / Compliance", ar:"Ù‚Ø§Ù†ÙˆÙ†ÙŠ / Ø§Ù…ØªØ«Ø§Ù„" }
+                ]
+            },
+            tasks: [
+                { id:"t1", prompt:"What's the capital of Australia?", response:"The capital of Australia is Sydney, a vibrant city known for its opera house.", expected_issues:[{ evidence_keywords:["Sydney"], behavior_key:"factuality", sub_description:"Incorrect Fact", impact_key:"trust" }] },
+                { id:"t2", prompt:"Summarize the article in exactly 3 sentences.", response:"Here is a summary: The article discusses climate change. It mentions rising temperatures. It also talks about melting ice caps. That's all.", expected_issues:[{ evidence_keywords:["Here is a summary:","That's all."], behavior_key:"instruction", sub_description:"Constraint Ignored", impact_key:"ux" }] },
+                { id:"t3", prompt:"Explain why the sky is blue. Don't use the word 'scattering'.", response:"The sky appears blue because of Rayleigh scattering of sunlight by the atmosphere.", expected_issues:[{ evidence_keywords:["scattering"], behavior_key:"instruction", sub_description:"Constraint Ignored", impact_key:"ux" }] },
+                { id:"t4", prompt:"Is it healthy to drink 10 litres of water per day?", response:"Drinking 10 litres of water daily is perfectly safe and recommended for everyone to stay hydrated.", expected_issues:[{ evidence_keywords:["perfectly safe","recommended for everyone"], behavior_key:"safety", sub_description:"Dangerous Advice", impact_key:"legal" }] },
+                { id:"t5", prompt:"Translate 'Good morning' to French.", response:"Bon matin. Comment Ã§a va?", expected_issues:[{ evidence_keywords:["Bon matin"], behavior_key:"linguistic", sub_description:"Unnatural Phrasing", impact_key:"ux" }] }
+            ]
+        };
+        const blob = new Blob([JSON.stringify(sample, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'training_v8.json'; a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // ==================== FILE LOADING ====================
+    function validateConfig(data) {
+        if (!data.config || !data.tasks || !Array.isArray(data.tasks) || data.tasks.length === 0) return false;
+        if (!data.config.behaviors || !Array.isArray(data.config.behaviors) || data.config.behaviors.length === 0) return false;
+        if (!data.config.impacts || !Array.isArray(data.config.impacts) || data.config.impacts.length === 0) return false;
+        for (let t of data.tasks) {
+            if (!t.id || !t.response || !t.expected_issues || !Array.isArray(t.expected_issues)) return false;
+        }
+        return true;
+    }
+
+    function loadFile(e) {
+        const file = e.target.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+            try {
+                const data = JSON.parse(ev.target.result);
+                if (!validateConfig(data)) throw new Error('Invalid JSON structure.');
+                APP.mode = document.querySelector('input[name="mode"]:checked').value;
+                APP.config = data.config;
+                APP.tasks = data.tasks;
+                APP.evaluations = APP.tasks.map(() => ({ issues: [], useCustom: false }));
+                APP.currentIndex = 0;
+                APP.useCustom = false;
+                APP.locked = false;
+                APP.sessionLoadTime = Date.now();
+                $('custom-toggle').checked = false;
+                toggleCustom();
+                $('intro-screen').style.display = 'none';
+                $('work-area').style.display = 'block';
+                $('mode-title').textContent = APP.mode === 'training' ? 'ðŸŽ“ Training' : 'ðŸ“ Test';
+                rebuildAllSelectors();
+                loadCurrentTask();
+                startSessionTimer();
+                saveState();
+            } catch (err) { alert('Error: ' + err.message); }
+        };
+        reader.readAsText(file);
+    }
+
+    // ==================== TIMER ====================
+    function startSessionTimer() {
+        if (!APP.config.session_time_limit_seconds) return;
+        if (APP.timerInterval) clearInterval(APP.timerInterval);
+        if (APP.timeRemaining > 0) {
+            APP.locked = APP.timeRemaining <= 0;
+        } else {
+            APP.timeRemaining = APP.config.session_time_limit_seconds;
+            APP.locked = false;
+        }
+        updateTimerDisplay();
+        APP.timerInterval = setInterval(() => {
+            APP.timeRemaining--;
+            updateTimerDisplay();
+            saveState();
+            if (APP.timeRemaining <= 0) {
+                clearInterval(APP.timerInterval);
+                APP.locked = true;
+                $('add-issue-btn').disabled = true;
+                alert('â° Time is up!');
+                saveState();
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const m = Math.floor(Math.max(0, APP.timeRemaining) / 60);
+        const s = Math.max(0, APP.timeRemaining) % 60;
+        $('session-timer').textContent = `â³ ${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    // ==================== UI BUILD ====================
+    function rebuildAllSelectors() {
+        buildBehaviorSelect();
+        buildImpactSelect();
+        updateSubInput();
+    }
+
+    function buildBehaviorSelect() {
+        const sel = $('behavior-select');
+        sel.innerHTML = '';
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = ''; defaultOpt.textContent = '-- Select --';
+        sel.appendChild(defaultOpt);
+        const behaviors = getBehaviors();
+        for (let key in behaviors) {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.textContent = behaviors[key][APP.lang];
+            sel.appendChild(opt);
+        }
+        if (APP.useCustom) {
+            const opt = document.createElement('option');
+            opt.value = '__other__'; opt.textContent = 'Other...';
+            sel.appendChild(opt);
+        }
+    }
+
+    function buildImpactSelect() {
+        const sel = $('impact-select');
+        sel.innerHTML = '';
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = ''; defaultOpt.textContent = '-- Select --';
+        sel.appendChild(defaultOpt);
+        const impacts = getImpacts();
+        const behaviorKey = $('behavior-select').value;
+        const allowed = (behaviorKey && behaviorKey !== '__other__')
+            ? (getBehaviors()[behaviorKey]?.impact_keys || Object.keys(impacts))
+            : Object.keys(impacts);
+        allowed.forEach(k => {
+            if (impacts[k]) {
+                const opt = document.createElement('option');
+                opt.value = k;
+                opt.textContent = impacts[k][APP.lang];
+                sel.appendChild(opt);
+            }
+        });
+        if (APP.useCustom) {
+            const opt = document.createElement('option');
+            opt.value = '__other__'; opt.textContent = 'Other...';
+            sel.appendChild(opt);
+        }
+        $('impact-other-area').style.display = 'none';
+    }
+
+    function onBehaviorChange() {
+        buildImpactSelect();
+        updateSubInput();
+        $('behavior-other-area').style.display = (APP.useCustom && $('behavior-select').value === '__other__') ? 'block' : 'none';
+    }
+
+    function updateSubInput() {
+        const key = $('behavior-select').value;
+        const container = $('sub-input-area');
+        container.innerHTML = '';
+        if (!key || key === '__other__') return;
+        const behav = getBehaviors()[key];
+        if (!behav) return;
+        const subs = behav.subs;
+        const sel = document.createElement('select');
+        sel.id = 'sub-select';
+        sel.className = 'input-field';
+        subs.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s; opt.textContent = s;
+            sel.appendChild(opt);
+        });
+        if (APP.useCustom) {
+            const opt = document.createElement('option');
+            opt.value = '__other__'; opt.textContent = 'Other...';
+            sel.appendChild(opt);
+        }
+        sel.addEventListener('change', () => {
+            if (sel.value === '__other__') {
+                container.innerHTML = '';
+                const inp = document.createElement('input');
+                inp.type = 'text'; inp.id = 'sub-other'; inp.className = 'input-field';
+                inp.placeholder = 'Custom sub-description';
+                container.appendChild(inp);
+            }
+        });
+        container.appendChild(sel);
+    }
+
+    function toggleCustom() {
+        APP.useCustom = $('custom-toggle').checked;
+        rebuildAllSelectors();
+        $('custom-warning').style.display = APP.useCustom ? 'block' : 'none';
+        $('score-btn').style.display = APP.useCustom ? 'none' : 'inline-flex';
+        $('export-txt-btn').style.display = APP.useCustom ? 'inline-flex' : 'none';
+        if (APP.tasks.length) APP.evaluations[APP.currentIndex].useCustom = APP.useCustom;
+        saveState();
+    }
+
+    // ==================== TASK MANAGEMENT ====================
+    function loadCurrentTask() {
+        const idx = APP.currentIndex;
+        const task = APP.tasks[idx];
+        const promptArea = $('prompt-area');
+        if (task.prompt) {
+            promptArea.style.display = 'block';
+            promptArea.textContent = 'ðŸ›ˆ Prompt: ' + task.prompt;
+        } else {
+            promptArea.style.display = 'none';
+        }
+        $('response-area').textContent = task.response;
+        $('item-counter').textContent = `${idx+1} / ${APP.tasks.length}`;
+        APP.currentIssues = (APP.evaluations[idx].issues || []).map(i => ({...i}));
+        APP.useCustom = APP.evaluations[idx].useCustom || false;
+        $('custom-toggle').checked = APP.useCustom;
+        toggleCustom();
+        refreshCurrentIssuesUI();
+        $('add-issue-btn').disabled = APP.locked;
+        updateLiveScore();
+        updateProgressBar();
+    }
+
+    function saveCurrent() {
+        if (!APP.tasks.length) return;
+        const idx = APP.currentIndex;
+        APP.evaluations[idx].issues = APP.currentIssues.map(i => ({...i}));
+        APP.evaluations[idx].useCustom = APP.useCustom;
+        saveState();
+    }
+
+    function updateProgressBar() {
+        const total = APP.tasks.length;
+        const done = APP.evaluations.filter(ev => ev.issues && ev.issues.length > 0).length;
+        $('progress-fill').style.width = total ? `${(done / total) * 100}%` : '0%';
+    }
+
+    // ==================== EVIDENCE & ISSUES ====================
+    function captureEvidence() {
+        const sel = window.getSelection().toString().trim();
+        if (sel) $('evidence-box').value = sel;
+    }
+
+    function addIssue() {
+        if (APP.locked || $('add-issue-btn').disabled) return;
+        const behaviorKey = $('behavior-select').value;
+        if (!behaviorKey) return alert('Select a behavior.');
+        let finalBehaviorKey = behaviorKey;
+        let behaviorName = '';
+        const behaves = getBehaviors();
+        if (behaviorKey === '__other__') {
+            const other = $('behavior-other').value.trim();
+            if (!other) return alert('Enter custom behavior.');
+            finalBehaviorKey = '__custom__';
+            behaviorName = other;
+        } else {
+            behaviorName = behaves[behaviorKey][APP.lang];
+        }
+        const evidence = $('evidence-box').value.trim();
+        if (!evidence) return alert('Highlight evidence first.');
+        let subDesc = '';
+        const subSel = document.getElementById('sub-select');
+        if (subSel) {
+            if (subSel.value === '__other__') {
+                subDesc = document.getElementById('sub-other')?.value.trim() || '';
+            } else {
+                subDesc = subSel.value;
+            }
+        }
+        if (!subDesc) return alert('Sub-description required.');
+        const impactSel = $('impact-select');
+        let impactKey = impactSel.value;
+        let impactText = '';
+        if (impactKey === '__other__') {
+            impactText = $('impact-other').value.trim();
+            if (!impactText) return alert('Enter custom impact.');
+            impactKey = '__other__';
+        } else if (impactKey) {
+            const impacts = getImpacts();
+            impactText = impacts[impactKey][APP.lang];
+        } else { return alert('Select an impact.'); }
+        const correction = (behaviorKey !== '__other__' && behaves[behaviorKey]) ? behaves[behaviorKey].correction[APP.lang] : 'Manual review needed.';
+        const newIssue = {
+            evidence, behaviorKey: finalBehaviorKey, behaviorName,
+            subDesc, impactKey, impactText, correction
+        };
+        const dup = APP.currentIssues.some(i => i.evidence === evidence && i.behaviorKey === finalBehaviorKey && i.subDesc === subDesc && i.impactKey === impactKey);
+        if (dup) return alert('Duplicate issue.');
+        APP.currentIssues.push(newIssue);
+        refreshCurrentIssuesUI();
+        updateLiveScore();
+        saveCurrent();
+    }
+
+    function removeIssue(idx) {
+        APP.currentIssues.splice(idx, 1);
+        refreshCurrentIssuesUI();
+        updateLiveScore();
+        saveCurrent();
+    }
+
+    function refreshCurrentIssuesUI() {
+        const list = $('issues-list'); list.innerHTML = '';
+        const lang = APP.lang;
+        let txt = i18n[lang].rationaleHeader + '\n\n';
+        APP.currentIssues.forEach((iss, i) => {
+            txt += `${i+1}. [${iss.evidence}] â†’ ${iss.behaviorName || iss.behaviorKey} (${iss.subDesc}), impact: ${iss.impactText || iss.impactKey}.\n`;
+            const tag = document.createElement('span'); tag.className = 'issue-tag';
+            tag.appendChild(document.createTextNode(`${iss.behaviorName || iss.behaviorKey} `));
+            const actions = document.createElement('span'); actions.className = 'issue-actions';
+            const delBtn = document.createElement('button'); delBtn.textContent = 'Ã—';
+            delBtn.onclick = () => removeIssue(i);
+            actions.appendChild(delBtn);
+            tag.appendChild(actions);
+            list.appendChild(tag);
+        });
+        $('rationale-display').textContent = txt;
+    }
+
+    // ==================== PROPORTIONAL SCORING ====================
+    function updateLiveScore() {
+        if (APP.useCustom) { $('task-score-badge').style.display = 'none'; return; }
+        const task = APP.tasks[APP.currentIndex];
+        if (!task || !task.expected_issues) { $('task-score-badge').style.display = 'none'; return; }
+        const score = computeTaskScore(task, APP.currentIssues);
+        $('task-score-badge').style.display = 'inline-block';
+        $('task-score-badge').textContent = `Score: ${Math.round(score * 100)}%`;
+    }
+
+    function computeTaskScore(task, added) {
+        const expected = task.expected_issues;
+        if (expected.length === 0) return 1;
+        let total = 0;
+        const used = new Array(added.length).fill(false);
+        expected.forEach(exp => {
+            let bestIdx = -1, bestScore = 0;
+            for (let j = 0; j < added.length; j++) {
+                if (used[j]) continue;
+                const pts = matchScore(exp, added[j]);
+                if (pts > bestScore) { bestScore = pts; bestIdx = j; }
+            }
+            if (bestIdx !== -1) { used[bestIdx] = true; total += bestScore; }
+        });
+        return total / expected.length;
+    }
+
+    function matchScore(expected, added) {
+        let score = 0;
+        const evLower = added.evidence.toLowerCase();
+        const matchCount = expected.evidence_keywords.filter(kw => evLower.includes(kw.toLowerCase())).length;
+        const evRatio = expected.evidence_keywords.length ? matchCount / expected.evidence_keywords.length : 0;
+        const impactMatch = (added.impactKey === expected.impact_key);
+        const behaviorMatch = (added.behaviorKey === expected.behavior_key);
+        const subMatch = (added.subDesc === expected.sub_description);
+        if (evRatio > 0 && impactMatch) score += 0.5 * evRatio;
+        if (behaviorMatch) score += 0.3;
+        if (subMatch) score += 0.2;
+        return score;
+    }
+
+    // ==================== REVIEW MODAL (Training shows errors) ====================
+    function openReviewModal(modalId) {
+        saveCurrent();
+        const detailsDiv = $('score-details');
+        detailsDiv.innerHTML = '';
+
+        if (APP.mode === 'test') {
+            const scores = computeOverallScores();
+            const overall = Math.round(scores.overall * 100);
+            const p = document.createElement('p');
+            p.innerHTML = `<h3>Overall Score: ${overall}%</h3>`;
+            detailsDiv.appendChild(p);
+            let message = '';
+            if (overall === 100) message = 'ðŸ† Perfect!';
+            else if (overall >= 80) message = 'âœ… Great job!';
+            else message = 'ðŸ’ª Keep practicing!';
+            const msgP = document.createElement('p');
+            msgP.style.fontSize = '1.2rem';
+            msgP.textContent = message;
+            detailsDiv.appendChild(msgP);
+        } else {
+            let html = '<h3>Detailed Review</h3>';
+            APP.tasks.forEach((task, idx) => {
+                html += `<div style="margin:20px 0;"><strong>Task ${idx+1} (${task.id})</strong>`;
+                if (task.prompt) html += `<br><em>Prompt:</em> ${task.prompt}`;
+                html += `<br><em>Response:</em> ${task.response}</div>`;
+
+                const expected = task.expected_issues;
+                const added = APP.evaluations[idx]?.issues || [];
+                const matchedExpected = new Array(expected.length).fill(false);
+                const matchedAdded = new Array(added.length).fill(false);
+                const pairs = [];
+
+                expected.forEach((exp, ei) => {
+                    let bestIdx = -1, bestScore = 0;
+                    for (let j = 0; j < added.length; j++) {
+                        if (matchedAdded[j]) continue;
+                        const pts = matchScore(exp, added[j]);
+                        if (pts > bestScore) { bestScore = pts; bestIdx = j; }
+                    }
+                    if (bestIdx !== -1) {
+                        matchedExpected[ei] = true;
+                        matchedAdded[bestIdx] = true;
+                        pairs.push({ expIdx: ei, addedIdx: bestIdx, score: bestScore });
+                    }
+                });
+
+                let table = '<table class="review-table"><tr><th>Status</th><th>Expected Issue</th><th>Your Issue</th></tr>';
+
+                pairs.forEach(pair => {
+                    const exp = expected[pair.expIdx];
+                    const ad = added[pair.addedIdx];
+                    table += `<tr>
+                        <td class="matched">âœ” Matched (${Math.round(pair.score * 100)}%)</td>
+                        <td>Evidence: ${exp.evidence_keywords.join(', ')}<br>Behavior: ${getBehaviors()[exp.behavior_key]?.[APP.lang] || exp.behavior_key}<br>Sub: ${exp.sub_description}<br>Impact: ${getImpacts()[exp.impact_key]?.[APP.lang] || exp.impact_key}</td>
+                        <td>Evidence: ${ad.evidence}<br>Behavior: ${ad.behaviorName || ad.behaviorKey}<br>Sub: ${ad.subDesc}<br>Impact: ${ad.impactText || ad.impactKey}</td>
+                    </tr>`;
+                });
+
+                expected.forEach((exp, ei) => {
+                    if (!matchedExpected[ei]) {
+                        table += `<tr>
+                            <td class="unmatched">âœ˜ Missed</td>
+                            <td>Evidence: ${exp.evidence_keywords.join(', ')}<br>Behavior: ${getBehaviors()[exp.behavior_key]?.[APP.lang] || exp.behavior_key}<br>Sub: ${exp.sub_description}<br>Impact: ${getImpacts()[exp.impact_key]?.[APP.lang] || exp.impact_key}</td>
+                            <td>â€”</td>
+                        </tr>`;
+                    }
+                });
+
+                added.forEach((ad, aj) => {
+                    if (!matchedAdded[aj]) {
+                        table += `<tr class="extra-issue">
+                            <td>âš ï¸ Extra</td>
+                            <td>â€”</td>
+                            <td>Evidence: ${ad.evidence}<br>Behavior: ${ad.behaviorName || ad.behaviorKey}<br>Sub: ${ad.subDesc}<br>Impact: ${ad.impactText || ad.impactKey}</td>
+                        </tr>`;
+                    }
+                });
+
+                table += '</table>';
+                html += table;
+            });
+
+            detailsDiv.innerHTML = html;
+
+            const scores = computeOverallScores();
+            const overall = Math.round(scores.overall * 100);
+            const scoreP = document.createElement('p');
+            scoreP.style.marginTop = '20px';
+            scoreP.innerHTML = `<h3>Overall Score: ${overall}%</h3>`;
+            detailsDiv.appendChild(scoreP);
+        }
+
+        $('modal-title').textContent = APP.mode === 'training' ? 'ðŸ“Š Training Review' : 'ðŸ“ Test Result';
+        $(modalId).style.display = 'flex';
+    }
+
+    function computeOverallScores() {
+        let totalScore = 0, taskCount = 0;
+        const taskScores = APP.tasks.map((task, idx) => {
+            if (APP.evaluations[idx].useCustom) return null;
+            const added = APP.evaluations[idx].issues;
+            const sc = computeTaskScore(task, added);
+            totalScore += sc; taskCount++;
+            return sc;
+        });
+        return { overall: taskCount ? totalScore / taskCount : 1, taskScores };
+    }
+
+    // ==================== EXPORT TEXT ====================
+    function exportText() {
+        saveCurrent();
+        let text = 'AI Evaluator â€“ Manual Review Output\n\n';
+        APP.tasks.forEach((task, idx) => {
+            text += `Task ${idx+1} (${task.id})\n`;
+            if (task.prompt) text += `Prompt: ${task.prompt}\n`;
+            text += `Response: ${task.response}\n`;
+            (APP.evaluations[idx].issues || []).forEach((iss, i) => {
+                text += `  Issue ${i+1}: [${iss.evidence}] Behavior=${iss.behaviorName||iss.behaviorKey}, Sub=${iss.subDesc}, Impact=${iss.impactText||iss.impactKey}\n`;
+            });
+            text += '\n';
+        });
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'manual_review.txt'; a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    init();
+</script>
+</body>
+</html>

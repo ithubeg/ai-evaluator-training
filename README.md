@@ -1,4 +1,4 @@
-# 🎓 Almaher AI Evaluator – Training Edition
+# 🎓AccuRater AI Evaluator – Training Edition
 Made with ❤️ by [Mohamed Ali Maher] – let’s connect on LinkedIn.
 
 **Train yourself to evaluate AI responses like a professional.**
@@ -11,9 +11,9 @@ Learn to identify factuality errors, instruction violations, logical flaws, safe
 
 ---
 
-## ✦ What is AI Evaluator?
+## ✦ What is AccuRater AI Evaluator?
 
-AI Evaluator is a **single‑page training application** that presents you with a set of AI responses together with expected issues.  
+AccuRater is a simple AI training application that presents you with a set of AI responses together with expected issues.  
 Your job is to highlight the problematic part, choose the correct behavior category, sub‑description and impact.  
 The tool instantly scores your work and, in Training Mode, shows exactly where you were right or wrong.
 

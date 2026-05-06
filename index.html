@@ -3,155 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AccuRater – AI Evaluation Training</title>
+    <title>AccuRater | AI Evaluation Training</title>
     <style>
         :root {
-            --primary: #2563eb; --primary-dark: #1d4ed8; --success: #10b981;
-            --danger: #ef4444; --warning: #f59e0b;
-            --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --text-secondary: #64748b;
-            --border: #e2e8f0; --radius: 12px; --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --primary: #1e3a8a;
+            --primary-light: #2563eb;
+            --success: #10b981;
+            --danger: #dc2626;
+            --warning: #f59e0b;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-hover: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: var(--bg); color: var(--text); padding: 20px;
-            line-height: 1.5; transition: 0.3s;
+            background: var(--bg);
+            color: var(--text);
+            padding: 24px;
+            line-height: 1.5;
+            transition: background 0.3s, color 0.3s;
         }
         body.rtl { direction: rtl; }
-
-        /* ----- Logo SVG (inline) ----- */
-        .logo { display: inline-flex; align-items: center; gap: 10px; }
-        .logo svg { width: 36px; height: 36px; }
-        .logo-text { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
-        .logo-text span { font-weight: 400; color: var(--text-secondary); }
-
-        /* ----- Buttons (icon + label) ----- */
-        .btn {
-            cursor: pointer; border: none; font-weight: 600; padding: 10px 18px;
-            border-radius: 8px; background: #f1f5f9; color: var(--text);
-            font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px;
-            transition: all 0.2s; border: 1px solid transparent;
+        body.paused {
+            pointer-events: none;
+            opacity: 0.7;
         }
-        .btn:hover { background: #e2e8f0; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-dark); }
-        .btn-success { background: var(--success); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-outline { background: transparent; border: 1px solid var(--border); }
-        .btn-icon { padding: 8px; border-radius: 8px; background: transparent; }
-        .btn-icon svg { width: 20px; height: 20px; }
+        body.paused #pause-btn,
+        body.paused #evidence-box { pointer-events: auto; opacity: 1; }
 
-        /* ----- Cards & Layout ----- */
-        .card {
-            background: var(--card); border-radius: var(--radius);
-            box-shadow: var(--shadow); padding: 24px; margin-bottom: 20px;
+        .header, .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+        }
+        .btn {
+            cursor: pointer;
+            border: 1px solid var(--border);
+            font-weight: 500;
+            padding: 10px 18px;
+            border-radius: 8px;
+            background: var(--card);
+            color: var(--text);
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.15s;
+            white-space: nowrap;
+            font-family: inherit;
+        }
+        .btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover { background: var(--primary-light); }
+        .btn-success {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+        .btn-danger {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: white;
+        }
+        .input-field, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: white;
+            transition: border-color 0.15s;
+        }
+        .input-field:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
         }
         .flex-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-        .container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 400px; gap: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 420px; gap: 24px; }
 
-        /* ----- Typography ----- */
-        h1 { font-size: 1.5rem; font-weight: 700; }
-        h2 { font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; }
-        .text-muted { color: var(--text-secondary); font-size: 0.85rem; }
-
-        /* ----- Response area ----- */
         #response-area {
-            background: #f1f5f9; border: 2px dashed var(--border); padding: 16px;
-            border-radius: 8px; min-height: 220px; max-height: 400px; overflow-y: auto;
-            white-space: pre-wrap; font-size: 0.95rem; line-height: 1.7; user-select: text;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 8px;
+            min-height: 220px;
+            max-height: 440px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.7;
+            font-size: 1rem;
+            user-select: text;
         }
         #prompt-area {
-            background: #eff6ff; border-left: 4px solid var(--primary);
-            padding: 12px 16px; border-radius: 6px; margin-bottom: 16px;
-            color: #1e40af; font-style: italic;
+            background: #eff6ff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-style: italic;
+            color: #1e3a8a;
+            border-left: 4px solid var(--primary);
         }
-
-        /* ----- Rationale Box ----- */
         .rationale-box {
-            background: #0f172a; color: #34d399; padding: 16px; border-radius: 8px;
-            font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
-            white-space: pre-wrap; min-height: 80px; line-height: 1.5;
+            background: #1e293b;
+            color: #34d399;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            white-space: pre-wrap;
+            min-height: 80px;
+            font-size: 0.9rem;
+            line-height: 1.6;
         }
-
-        /* ----- Issue tags ----- */
         .issue-tag {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: #fee2e2; color: #991b1b; padding: 4px 12px;
-            border-radius: 20px; font-size: 0.8rem; margin: 3px; font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin: 4px;
         }
         .issue-actions button {
-            background: none; border: none; color: #991b1b; cursor: pointer;
-            font-size: 1rem; line-height: 1; padding: 0 4px;
+            background: none;
+            border: none;
+            color: #991b1b;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0 4px;
+            line-height: 1;
         }
-
-        /* ----- Timer & Score ----- */
         .timer-big {
-            font-size: 1.8rem; font-weight: 700; color: var(--danger);
-            background: #fef2f2; padding: 6px 18px; border-radius: 8px;
-            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--danger);
+            background: #fee2e2;
+            padding: 6px 18px;
+            border-radius: 8px;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .timer-big svg { width: 20px; height: 20px; }
+        .warning-banner {
+            background: #fff3cd;
+            color: #856404;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+            font-weight: 500;
+            border: 1px solid #ffc107;
         }
         .score-badge {
-            font-weight: 600; padding: 5px 14px; border-radius: 20px;
-            background: #dcfce7; color: #166534; font-size: 0.9rem;
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: 20px;
+            background: #d1fae5;
+            color: #065f46;
+            font-size: 0.9rem;
         }
-        .warning-banner {
-            background: #fef9c3; color: #854d0e; padding: 10px 14px;
-            border-radius: 8px; margin: 12px 0; font-weight: 500;
-            border-left: 4px solid var(--warning);
-        }
-
-        /* ----- Progress Bar ----- */
-        #progress-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; margin: 16px 0 8px; }
-        #progress-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.3s; }
-
-        /* ----- Modal ----- */
         .modal-overlay {
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.4); display:flex; justify-content:center; align-items:center;
-            z-index:1000; backdrop-filter: blur(4px);
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(2px);
+            display:flex; justify-content:center; align-items:center; z-index:1000;
         }
         .modal-content {
-            background: white; border-radius: var(--radius); padding: 30px;
-            max-width: 800px; width:90%; max-height:80vh; overflow-y:auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            background: white;
+            border-radius: var(--radius);
+            padding: 32px;
+            max-width: 850px;
+            width:90%;
+            max-height:85vh;
+            overflow-y:auto;
+            text-align: left;
+            box-shadow: var(--shadow-hover);
         }
-
-        /* ----- Task History List ----- */
+        #progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin: 8px 0 20px;
+            overflow: hidden;
+        }
+        #progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .review-table { width:100%; border-collapse:collapse; margin-top:16px; }
+        .review-table th, .review-table td {
+            border:1px solid #e2e8f0; padding:10px 12px; text-align:left; vertical-align:top; font-size:0.9rem;
+        }
+        .review-table th { background:#f8fafc; font-weight:600; }
+        .matched { color: #065f46; font-weight:600; }
+        .unmatched { color: #b91c1c; }
+        .extra-issue { background: #fff3cd; }
         .task-list-item {
-            padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer;
-            display: flex; justify-content: space-between; align-items: center;
-            transition: background 0.15s;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.1s;
         }
         .task-list-item:hover { background: #f8fafc; }
-        .task-list-item .task-id { font-weight: 600; }
-        .task-list-item .issue-count { color: var(--text-secondary); font-size: 0.85rem; }
-
-        /* ----- Responsive ----- */
-        @media (max-width: 800px) {
-            .container { grid-template-columns: 1fr; }
-            .flex-between { flex-direction: column; align-items: flex-start; }
-        }
+        .task-list-item:last-child { border-bottom: none; }
+        .logo { font-size: 1.6rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .logo svg { width: 28px; height: 28px; }
+        @media (max-width: 800px) { .container { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<!-- ========== INTRO SCREEN (Professional) ========== -->
-<div id="intro-screen" class="card" style="max-width:600px; margin:60px auto; text-align:center; padding:40px;">
-    <!-- Logo -->
-    <div class="logo" style="justify-content:center; margin-bottom:16px;">
-        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="24" cy="24" r="22" stroke="#2563eb" stroke-width="3" fill="none"/>
-            <circle cx="24" cy="24" r="14" stroke="#2563eb" stroke-width="2" stroke-dasharray="4 4"/>
-            <path d="M16 24 L21 29 L32 17" stroke="#10b981" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<!-- INTRO SCREEN -->
+<div id="intro-screen" class="card" style="max-width:650px; margin:60px auto; text-align:center; padding: 48px 32px;">
+    <div style="display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:24px;">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="22" cy="22" r="20" stroke="#1e3a8a" stroke-width="3" fill="none"/>
+            <circle cx="22" cy="22" r="4" fill="#1e3a8a"/>
+            <line x1="22" y1="2" x2="22" y2="8" stroke="#1e3a8a" stroke-width="3" stroke-linecap="round"/>
+            <line x1="22" y1="36" x2="22" y2="42" stroke="#1e3a8a" stroke-width="3" stroke-linecap="round"/>
+            <line x1="2" y1="22" x2="8" y2="22" stroke="#1e3a8a" stroke-width="3" stroke-linecap="round"/>
+            <line x1="36" y1="22" x2="42" y2="22" stroke="#1e3a8a" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="22" cy="22" r="12" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
         </svg>
-        <div class="logo-text">Accu<span>Rater</span></div>
+        <span style="font-size:2rem; font-weight:700; color:#1e3a8a;">AccuRater</span>
     </div>
-    <h1 style="font-size:1.8rem; margin-bottom:8px;">AI Evaluation Training</h1>
-    <p class="text-muted" style="margin-bottom:24px;">Master the skill of evaluating AI responses with precision.</p>
-
-    <!-- Mode Selection -->
-    <div class="flex-row" style="justify-content:center; margin-bottom:24px; gap:24px;">
+    <p style="font-size:1.2rem; color:var(--text-muted); max-width:480px; margin:0 auto 20px;">
+        The structured way to practice AI response evaluation. Master the skills that top AI teams demand.
+    </p>
+    <div class="flex-row" style="justify-content:center; margin:24px 0;">
         <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
             <input type="radio" name="mode" value="training" checked> Training mode
         </label>
@@ -159,153 +273,120 @@
             <input type="radio" name="mode" value="test"> Test mode
         </label>
     </div>
-
-    <!-- File Upload -->
-    <div style="margin-bottom:16px;">
-        <input type="file" id="training-file" accept=".json" style="display:none;" />
-        <label for="training-file" class="btn btn-primary" style="cursor:pointer;">📂 Upload Training JSON</label>
-    </div>
-    <p class="text-muted">or <a href="#" id="download-sample-link">download a sample pack</a> (5 tasks)</p>
+    <input type="file" id="training-file" accept=".json" class="input-field" style="width:auto; display:inline-block; margin:16px 0;">
+    <p style="margin-top:8px; font-size:0.9rem;">
+        <a href="#" id="download-sample-link" style="color:var(--primary); text-decoration:none;">Download sample training pack (5 tasks)</a>
+    </p>
 </div>
 
-<!-- ========== WORK AREA ========== -->
+<!-- WORK AREA -->
 <div id="work-area" style="display:none;">
-    <!-- Header -->
-    <div class="card flex-between">
+    <div class="header">
         <div class="flex-row">
             <div class="logo">
-                <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
-                    <circle cx="24" cy="24" r="22" stroke="#2563eb" stroke-width="3" fill="none"/>
-                    <circle cx="24" cy="24" r="14" stroke="#2563eb" stroke-width="2" stroke-dasharray="4 4"/>
-                    <path d="M16 24 L21 29 L32 17" stroke="#10b981" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <svg width="28" height="28" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="22" cy="22" r="20" stroke="#1e3a8a" stroke-width="3" fill="none"/>
+                    <circle cx="22" cy="22" r="4" fill="#1e3a8a"/>
+                    <line x1="22" y1="2" x2="22" y2="8" stroke="#1e3a8a" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="22" y1="36" x2="22" y2="42" stroke="#1e3a8a" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="2" y1="22" x2="8" y2="22" stroke="#1e3a8a" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="36" y1="22" x2="42" y2="22" stroke="#1e3a8a" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="22" cy="22" r="12" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
                 </svg>
-                <span class="logo-text" style="font-size:1.2rem;">Accu<span>Rater</span></span>
+                <span>AccuRater</span>
             </div>
-            <span id="mode-title" style="font-weight:600; color:var(--primary);"></span>
+            <span id="mode-title" style="font-weight:500; color:var(--text-muted);">Training</span>
             <span id="session-timer" class="timer-big">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/></svg>
-                00:00
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                <span id="timer-text">00:00</span>
             </span>
-            <span id="task-score-badge" class="score-badge" style="display:none;">Score: -</span>
+            <span id="task-score-badge" class="score-badge" style="display:none;">Score: —</span>
         </div>
         <div class="flex-row">
-            <select id="lang-switcher" class="btn btn-outline" style="padding:8px 12px;">
-                <option value="en">EN</option>
-                <option value="ar">AR</option>
+            <select id="lang-switcher" class="input-field" style="width:auto;">
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
             </select>
-            <button id="home-btn" class="btn btn-outline" title="Home">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12L12 3l9 9"/><path d="M5 10v10h14V10"/></svg>
-                Home
-            </button>
-            <button id="history-btn" class="btn btn-outline" title="Task History">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg>
-                History
-            </button>
-            <button id="prev-btn" class="btn btn-outline">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-                Prev
-            </button>
-            <span id="item-counter" class="text-muted" style="min-width:60px;">0 / 0</span>
-            <button id="next-btn" class="btn btn-outline">
-                Next
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            <button id="score-btn" class="btn btn-primary">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
-                Score
-            </button>
-            <button id="export-txt-btn" class="btn btn-outline" style="display:none;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><polyline points="14 2 14 8 20 8"/></svg>
-                Export TXT
-            </button>
+            <button id="home-btn" class="btn">Home</button>
+            <button id="history-btn" class="btn">History</button>
+            <button id="prev-btn" class="btn">Previous</button>
+            <span id="item-counter" style="font-weight:500;">0 / 0</span>
+            <button id="next-btn" class="btn">Next</button>
+            <button id="score-btn" class="btn btn-primary">Show Score</button>
+            <button id="export-txt-btn" class="btn btn-primary" style="display:none;">Export Text</button>
         </div>
     </div>
 
-    <!-- Progress Bar -->
     <div id="progress-bar"><div id="progress-fill"></div></div>
 
-    <!-- Main Content -->
     <div class="container">
-        <!-- Left Panel -->
         <div>
             <div class="card">
                 <div id="prompt-area" style="display:none;"></div>
-                <h2>Response Content</h2>
+                <h2 id="lbl-response" style="margin-bottom:12px; font-size:1.1rem; font-weight:600;">Response Content</h2>
                 <div id="response-area"></div>
-                <p class="text-muted" style="margin-top:8px;">Highlight the problematic part to capture evidence.</p>
+                <small style="color:var(--text-muted); display:block; margin-top:8px;">Select the problematic text to capture evidence.</small>
             </div>
             <div class="card">
-                <h2>Your Issues</h2>
+                <h2 id="lbl-rationale" style="margin-bottom:12px; font-size:1.1rem; font-weight:600;">Your Issues</h2>
                 <div id="rationale-display" class="rationale-box"></div>
             </div>
         </div>
-
-        <!-- Right Panel -->
         <div>
             <div class="card">
-                <h2>Issue Editor</h2>
-                <label style="display:flex; align-items:center; gap:8px; margin-bottom:16px; cursor:pointer;">
+                <h2 id="lbl-quiz" style="margin-bottom:8px; font-size:1.1rem; font-weight:600;">Issue Editor</h2>
+                <label style="display:flex; align-items:center; gap:8px; margin-bottom:12px; cursor:pointer;">
                     <input type="checkbox" id="custom-toggle">
-                    <span>Enable custom entries (disables auto‑scoring)</span>
+                    <span style="font-weight:500;">Allow custom entries (disables auto‑scoring)</span>
                 </label>
                 <div id="custom-warning" class="warning-banner" style="display:none;">
-                    Custom mode is active. Scoring is disabled. Export a text file for manual review.
+                    Custom mode enabled. Scoring is turned off. You can export your work as a text file for manual review.
                 </div>
-                <label class="text-muted">Evidence:</label>
-                <textarea id="evidence-box" rows="2" readonly class="input-field" style="background:#f8fafc; resize:none;"></textarea>
-
-                <label class="text-muted">Behavior:</label>
-                <select id="behavior-select" class="input-field"></select>
-                <div id="behavior-other-area" style="display:none;">
+                <label id="lbl-evidence" style="font-weight:500; margin-bottom:4px;">Evidence:</label>
+                <textarea id="evidence-box" rows="2" readonly class="input-field" style="margin-bottom:8px;"></textarea>
+                <label id="lbl-behavior" style="font-weight:500; margin-bottom:4px;">Behavior:</label>
+                <select id="behavior-select" class="input-field" style="margin-bottom:8px;"></select>
+                <div id="behavior-other-area" style="display:none; margin-bottom:8px;">
                     <input type="text" id="behavior-other" class="input-field" placeholder="Custom behavior">
                 </div>
-
-                <label class="text-muted">Sub-Description:</label>
-                <div id="sub-input-area"></div>
-
-                <label class="text-muted">Impact:</label>
-                <select id="impact-select" class="input-field"></select>
-                <div id="impact-other-area" style="display:none;">
+                <label id="lbl-sub" style="font-weight:500; margin-bottom:4px;">Sub-Description:</label>
+                <div id="sub-input-area" style="margin-bottom:8px;"></div>
+                <label id="lbl-impact" style="font-weight:500; margin-bottom:4px;">Impact:</label>
+                <select id="impact-select" class="input-field" style="margin-bottom:8px;"></select>
+                <div id="impact-other-area" style="display:none; margin-bottom:8px;">
                     <input type="text" id="impact-other" class="input-field" placeholder="Custom impact">
                 </div>
-
-                <button id="add-issue-btn" class="btn btn-primary" style="width:100%; margin-top:16px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Add Issue
-                </button>
+                <button id="add-issue-btn" class="btn btn-primary" style="width:100%; margin-top:12px;">Add Issue</button>
             </div>
             <div class="card">
-                <h2>Issues List</h2>
-                <div id="issues-list" style="min-height:50px;"></div>
+                <h2 id="lbl-history" style="margin-bottom:12px; font-size:1.1rem; font-weight:600;">Issues List</h2>
+                <div id="issues-list" style="min-height:30px;"></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- ========== SCORE MODAL ========== -->
+<!-- SCORE / REVIEW MODAL -->
 <div id="score-modal" class="modal-overlay" style="display:none;">
     <div class="modal-content">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 id="modal-title">Performance Review</h2>
-            <button onclick="closeModal('score-modal')" class="btn btn-outline" style="padding:6px 12px;">Close</button>
-        </div>
+        <span style="float:right; cursor:pointer; font-size:1.5rem;" onclick="closeModal('score-modal')">&times;</span>
+        <h2 id="modal-title" style="margin-bottom:20px;">Performance Review</h2>
         <div id="score-details"></div>
+        <button class="btn btn-primary" onclick="closeModal('score-modal')" style="margin-top:20px;">Close</button>
     </div>
 </div>
 
-<!-- ========== TASK HISTORY MODAL ========== -->
+<!-- TASK HISTORY MODAL -->
 <div id="history-modal" class="modal-overlay" style="display:none;">
-    <div class="modal-content" style="max-width:500px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-            <h2>Task History</h2>
-            <button onclick="closeModal('history-modal')" class="btn btn-outline" style="padding:6px 12px;">Close</button>
-        </div>
+    <div class="modal-content" style="max-width:520px;">
+        <span style="float:right; cursor:pointer; font-size:1.5rem;" onclick="closeModal('history-modal')">&times;</span>
+        <h2 style="margin-bottom:16px;">Task History</h2>
         <div id="task-list-container"></div>
     </div>
 </div>
 
 <script>
-    // ==================== APP STATE (unchanged) ====================
+    // ==================== APP STATE ====================
     const APP = {
         lang: 'en',
         mode: 'training',
@@ -320,7 +401,6 @@
         locked: false,
         sessionLoadTime: null,
     };
-
 
     const i18n = {
         en: {
@@ -337,7 +417,7 @@
         }
     };
 
-    const STORAGE_KEY = 'ai_evaluator_v8';
+    const STORAGE_KEY = 'accurater_state_v1';
 
     // ==================== HELPERS ====================
     const $ = (id) => document.getElementById(id);
@@ -400,13 +480,12 @@
         updateUILanguage();
         document.addEventListener('keydown', handleKeyboard);
 
-        // Restore session if exists
         const restored = loadState();
         if (restored) {
             document.querySelector(`input[name="mode"][value="${APP.mode}"]`).checked = true;
             $('intro-screen').style.display = 'none';
             $('work-area').style.display = 'block';
-            $('mode-title').textContent = APP.mode === 'training' ? '🎓 Training' : '📝 Test';
+            $('mode-title').textContent = APP.mode === 'training' ? 'Training' : 'Test';
             rebuildAllSelectors();
             loadCurrentTask();
             startSessionTimer();
@@ -414,14 +493,9 @@
     }
 
     function goHome() {
-        // Stop timer and return to intro screen
-        if (APP.timerInterval) {
-            clearInterval(APP.timerInterval);
-            APP.timerInterval = null;
-        }
+        if (APP.timerInterval) { clearInterval(APP.timerInterval); APP.timerInterval = null; }
         $('work-area').style.display = 'none';
         $('intro-screen').style.display = 'block';
-        // Note: we do NOT clear localStorage; it can be resumed by loading same file again
     }
 
     function openTaskHistory() {
@@ -447,7 +521,6 @@
         $(modalId).style.display = 'none';
     }
 
-    // Mode selection
     document.querySelectorAll('input[name="mode"]').forEach(radio => {
         radio.addEventListener('change', function() {
             APP.mode = this.value;
@@ -506,7 +579,7 @@
         };
         const blob = new Blob([JSON.stringify(sample, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = 'training_v8.json'; a.click();
+        const a = document.createElement('a'); a.href = url; a.download = 'accurater_training.json'; a.click();
         URL.revokeObjectURL(url);
     }
 
@@ -540,7 +613,7 @@
                 toggleCustom();
                 $('intro-screen').style.display = 'none';
                 $('work-area').style.display = 'block';
-                $('mode-title').textContent = APP.mode === 'training' ? '🎓 Training' : '📝 Test';
+                $('mode-title').textContent = APP.mode === 'training' ? 'Training' : 'Test';
                 rebuildAllSelectors();
                 loadCurrentTask();
                 startSessionTimer();
@@ -569,7 +642,7 @@
                 clearInterval(APP.timerInterval);
                 APP.locked = true;
                 $('add-issue-btn').disabled = true;
-                alert('⏰ Time is up!');
+                alert('Time is up!');
                 saveState();
             }
         }, 1000);
@@ -578,7 +651,7 @@
     function updateTimerDisplay() {
         const m = Math.floor(Math.max(0, APP.timeRemaining) / 60);
         const s = Math.max(0, APP.timeRemaining) % 60;
-        $('session-timer').textContent = `⏳ ${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        $('timer-text').textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
 
     // ==================== UI BUILD ====================
@@ -691,7 +764,7 @@
         const promptArea = $('prompt-area');
         if (task.prompt) {
             promptArea.style.display = 'block';
-            promptArea.textContent = '🛈 Prompt: ' + task.prompt;
+            promptArea.textContent = 'Prompt: ' + task.prompt;
         } else {
             promptArea.style.display = 'none';
         }
@@ -844,7 +917,7 @@
         return score;
     }
 
-    // ==================== REVIEW MODAL (Training shows errors) ====================
+    // ==================== REVIEW MODAL ====================
     function openReviewModal(modalId) {
         saveCurrent();
         const detailsDiv = $('score-details');
@@ -854,20 +927,19 @@
             const scores = computeOverallScores();
             const overall = Math.round(scores.overall * 100);
             const p = document.createElement('p');
-            p.innerHTML = `<h3>Overall Score: ${overall}%</h3>`;
+            p.innerHTML = `<h3 style="margin-bottom:8px;">Overall Score: ${overall}%</h3>`;
             detailsDiv.appendChild(p);
             let message = '';
-            if (overall === 100) message = '🏆 Perfect!';
-            else if (overall >= 80) message = '✅ Great job!';
-            else message = '💪 Keep practicing!';
+            if (overall === 100) message = 'Excellent – perfect evaluation.';
+            else if (overall >= 80) message = 'Great job – very accurate.';
+            else message = 'Keep practicing to improve.';
             const msgP = document.createElement('p');
-            msgP.style.fontSize = '1.2rem';
             msgP.textContent = message;
             detailsDiv.appendChild(msgP);
         } else {
-            let html = '<h3>Detailed Review</h3>';
+            let html = '<p style="font-weight:500; margin-bottom:16px;">Detailed Review</p>';
             APP.tasks.forEach((task, idx) => {
-                html += `<div style="margin:20px 0;"><strong>Task ${idx+1} (${task.id})</strong>`;
+                html += `<div style="margin:24px 0;"><strong>Task ${idx+1} (${task.id})</strong>`;
                 if (task.prompt) html += `<br><em>Prompt:</em> ${task.prompt}`;
                 html += `<br><em>Response:</em> ${task.response}</div>`;
 
@@ -897,7 +969,7 @@
                     const exp = expected[pair.expIdx];
                     const ad = added[pair.addedIdx];
                     table += `<tr>
-                        <td class="matched">✔ Matched (${Math.round(pair.score * 100)}%)</td>
+                        <td class="matched">Matched (${Math.round(pair.score * 100)}%)</td>
                         <td>Evidence: ${exp.evidence_keywords.join(', ')}<br>Behavior: ${getBehaviors()[exp.behavior_key]?.[APP.lang] || exp.behavior_key}<br>Sub: ${exp.sub_description}<br>Impact: ${getImpacts()[exp.impact_key]?.[APP.lang] || exp.impact_key}</td>
                         <td>Evidence: ${ad.evidence}<br>Behavior: ${ad.behaviorName || ad.behaviorKey}<br>Sub: ${ad.subDesc}<br>Impact: ${ad.impactText || ad.impactKey}</td>
                     </tr>`;
@@ -906,7 +978,7 @@
                 expected.forEach((exp, ei) => {
                     if (!matchedExpected[ei]) {
                         table += `<tr>
-                            <td class="unmatched">✘ Missed</td>
+                            <td class="unmatched">Missed</td>
                             <td>Evidence: ${exp.evidence_keywords.join(', ')}<br>Behavior: ${getBehaviors()[exp.behavior_key]?.[APP.lang] || exp.behavior_key}<br>Sub: ${exp.sub_description}<br>Impact: ${getImpacts()[exp.impact_key]?.[APP.lang] || exp.impact_key}</td>
                             <td>—</td>
                         </tr>`;
@@ -916,7 +988,7 @@
                 added.forEach((ad, aj) => {
                     if (!matchedAdded[aj]) {
                         table += `<tr class="extra-issue">
-                            <td>⚠️ Extra</td>
+                            <td>Extra</td>
                             <td>—</td>
                             <td>Evidence: ${ad.evidence}<br>Behavior: ${ad.behaviorName || ad.behaviorKey}<br>Sub: ${ad.subDesc}<br>Impact: ${ad.impactText || ad.impactKey}</td>
                         </tr>`;
@@ -932,12 +1004,12 @@
             const scores = computeOverallScores();
             const overall = Math.round(scores.overall * 100);
             const scoreP = document.createElement('p');
-            scoreP.style.marginTop = '20px';
+            scoreP.style.marginTop = '24px';
             scoreP.innerHTML = `<h3>Overall Score: ${overall}%</h3>`;
             detailsDiv.appendChild(scoreP);
         }
 
-        $('modal-title').textContent = APP.mode === 'training' ? '📊 Training Review' : '📝 Test Result';
+        $('modal-title').textContent = APP.mode === 'training' ? 'Training Review' : 'Test Result';
         $(modalId).style.display = 'flex';
     }
 
@@ -956,7 +1028,7 @@
     // ==================== EXPORT TEXT ====================
     function exportText() {
         saveCurrent();
-        let text = 'AI Evaluator – Manual Review Output\n\n';
+        let text = 'AccuRater – Manual Review Output\n\n';
         APP.tasks.forEach((task, idx) => {
             text += `Task ${idx+1} (${task.id})\n`;
             if (task.prompt) text += `Prompt: ${task.prompt}\n`;

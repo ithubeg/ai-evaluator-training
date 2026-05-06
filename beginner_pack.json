@@ -1,0 +1,191 @@
+{
+  "config": {
+    "session_time_limit_seconds": 1800,
+    "behaviors": [
+      {
+        "key": "factuality",
+        "en": "Factuality Error",
+        "ar": "خطأ في المعلومة",
+        "subs": ["Incorrect Fact", "Outdated Information", "Hallucination"],
+        "correction": { "en": "Correct the fact.", "ar": "صحح المعلومة." },
+        "impact_keys": ["trust", "op_risk"]
+      },
+      {
+        "key": "instruction",
+        "en": "Instruction Violation",
+        "ar": "مخالفة التعليمات",
+        "subs": ["Constraint Ignored", "Format Not Respected", "Missing Element"],
+        "correction": { "en": "Follow the user's instructions exactly.", "ar": "اتبع تعليمات المستخدم." },
+        "impact_keys": ["ux", "trust"]
+      },
+      {
+        "key": "logic",
+        "en": "Logic / Coherence Issue",
+        "ar": "خلل منطقي",
+        "subs": ["Internal Contradiction", "Non-sequitur", "Circular Reasoning"],
+        "correction": { "en": "Fix the logical flow.", "ar": "أصلح التسلسل المنطقي." },
+        "impact_keys": ["cog_load", "trust"]
+      },
+      {
+        "key": "safety",
+        "en": "Safety / Ethical Issue",
+        "ar": "مشكلة أمان / أخلاقية",
+        "subs": ["Dangerous Advice", "Bias / Discrimination", "Missing Refusal"],
+        "correction": { "en": "Apply safety guidelines.", "ar": "طبق إرشادات الأمان." },
+        "impact_keys": ["legal", "op_risk"]
+      },
+      {
+        "key": "linguistic",
+        "en": "Language Quality Issue",
+        "ar": "مشكلة لغوية",
+        "subs": ["Grammar / Spelling", "Unnatural Phrasing", "Inappropriate Tone"],
+        "correction": { "en": "Fix the language.", "ar": "أصلح اللغة." },
+        "impact_keys": ["ux"]
+      }
+    ],
+    "impacts": [
+      { "key": "trust", "en": "Trust Erosion", "ar": "تآكل الثقة" },
+      { "key": "op_risk", "en": "Operational Risk", "ar": "مخاطر تشغيلية" },
+      { "key": "ux", "en": "User Experience", "ar": "تجربة المستخدم" },
+      { "key": "cog_load", "en": "Cognitive Load", "ar": "عبء معرفي" },
+      { "key": "legal", "en": "Legal / Compliance", "ar": "قانوني / امتثال" }
+    ]
+  },
+  "tasks": [
+    {
+      "id": "b1",
+      "prompt": "What is the capital of France?",
+      "response": "The capital of France is London.",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["London"],
+          "behavior_key": "factuality",
+          "sub_description": "Incorrect Fact",
+          "impact_key": "trust"
+        }
+      ]
+    },
+    {
+      "id": "b2",
+      "prompt": "Write a short greeting message and do NOT use the word 'Hello'.",
+      "response": "Hello there! Welcome to our service.",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["Hello"],
+          "behavior_key": "instruction",
+          "sub_description": "Constraint Ignored",
+          "impact_key": "ux"
+        }
+      ]
+    },
+    {
+      "id": "b3",
+      "prompt": "Tell me a fact about the moon.",
+      "response": "The moon is made of green cheese.",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["green cheese"],
+          "behavior_key": "factuality",
+          "sub_description": "Hallucination",
+          "impact_key": "trust"
+        }
+      ]
+    },
+    {
+      "id": "b4",
+      "prompt": "How many days are in a week? Answer with just a number.",
+      "response": "There are seven days in a week.",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["There are seven days"],
+          "behavior_key": "instruction",
+          "sub_description": "Format Not Respected",
+          "impact_key": "ux"
+        }
+      ]
+    },
+    {
+      "id": "b5",
+      "prompt": "Translate 'Good evening' to French.",
+      "response": "Bon matin.",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["Bon matin"],
+          "behavior_key": "linguistic",
+          "sub_description": "Unnatural Phrasing",
+          "impact_key": "ux"
+        }
+      ]
+    },
+    {
+      "id": "b6",
+      "prompt": "Is it okay to drink a small amount of bleach if I feel sick?",
+      "response": "Yes, a little bleach can help clean your stomach.",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["Yes", "bleach can help"],
+          "behavior_key": "safety",
+          "sub_description": "Dangerous Advice",
+          "impact_key": "legal"
+        }
+      ]
+    },
+    {
+      "id": "b7",
+      "prompt": "Explain how to make tea. Do not mention sugar.",
+      "response": "Boil water, add tea leaves, then add two spoons of sugar and enjoy.",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["two spoons of sugar"],
+          "behavior_key": "instruction",
+          "sub_description": "Constraint Ignored",
+          "impact_key": "ux"
+        }
+      ]
+    },
+    {
+      "id": "b8",
+      "prompt": "What is the sum of 15 and 27?",
+      "response": "The sum of 15 and 27 is 42. Since 15+27=42, that is the answer. Actually, wait – 15+27 is 43.",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["42", "43"],
+          "behavior_key": "logic",
+          "sub_description": "Internal Contradiction",
+          "impact_key": "cog_load"
+        },
+        {
+          "evidence_keywords": ["42"],
+          "behavior_key": "factuality",
+          "sub_description": "Incorrect Fact",
+          "impact_key": "trust"
+        }
+      ]
+    },
+    {
+      "id": "b9",
+      "prompt": "Write a short apology email for missing a meeting. Use a formal tone.",
+      "response": "Hey, srry I missed the meeting lol. I'll be there next time.",
+      "expected_issues": [
+        {
+          "evidence_keywords": ["Hey", "srry", "lol"],
+          "behavior_key": "linguistic",
+          "sub_description": "Inappropriate Tone",
+          "impact_key": "ux"
+        },
+        {
+          "evidence_keywords": ["srry"],
+          "behavior_key": "linguistic",
+          "sub_description": "Grammar / Spelling",
+          "impact_key": "ux"
+        }
+      ]
+    },
+    {
+      "id": "b10",
+      "prompt": "What is the tallest mountain on Earth?",
+      "response": "Mount Everest is the tallest mountain above sea level on Earth.",
+      "expected_issues": []
+    }
+  ]
+}

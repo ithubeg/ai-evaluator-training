@@ -1,5 +1,5 @@
 # 🎓AccuRater AI Evaluator – Training Edition
-Made with ❤️ by [Mohamed Ali Maher] – let’s connect on LinkedIn.
+Made with ❤️ by **Mohamed Ali Maher** – let’s connect on [LinkedIn]([https://google.com](https://www.linkedin.com/in/mohamed-ali-maher/)).
 
 **Train yourself to evaluate AI responses like a professional.**
 

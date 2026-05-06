@@ -4,7 +4,7 @@ Made with ❤️ by [Mohamed Ali Maher] – let’s connect on LinkedIn.
 **Train yourself to evaluate AI responses like a professional.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Live Demo](https://img.shields.io/badge/demo-live-blue)](https://your-project.pages.dev)
+[![Live Demo](https://img.shields.io/badge/demo-live-blue)]([https://your-project.pages.dev](https://ai-evaluator-training.advertcore.workers.dev/))
 
 A free, browser‑based tool that helps you practice the structured evaluation of AI‑generated text.  
 Learn to identify factuality errors, instruction violations, logical flaws, safety issues and linguistic mistakes – the way high‑end AI companies do.

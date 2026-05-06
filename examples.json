@@ -1,0 +1,202 @@
+{
+  "config": {
+    "session_time_limit_seconds": 900,
+    "behaviors": [
+      {
+        "key": "factuality",
+        "en": "Factuality Error",
+        "ar": "خطأ في المعلومة",
+        "subs": [
+          "Incorrect Fact",
+          "Outdated Information",
+          "Hallucination"
+        ],
+        "correction": {
+          "en": "Correct the fact.",
+          "ar": "صحح المعلومة."
+        },
+        "impact_keys": [
+          "trust",
+          "op_risk"
+        ]
+      },
+      {
+        "key": "instruction",
+        "en": "Instruction Violation",
+        "ar": "مخالفة التعليمات",
+        "subs": [
+          "Constraint Ignored",
+          "Format Not Respected",
+          "Missing Element"
+        ],
+        "correction": {
+          "en": "Follow the user's instructions exactly.",
+          "ar": "اتبع تعليمات المستخدم."
+        },
+        "impact_keys": [
+          "ux",
+          "trust"
+        ]
+      },
+      {
+        "key": "logic",
+        "en": "Logic / Coherence Issue",
+        "ar": "خلل منطقي",
+        "subs": [
+          "Internal Contradiction",
+          "Non-sequitur",
+          "Circular Reasoning"
+        ],
+        "correction": {
+          "en": "Fix the logical flow.",
+          "ar": "أصلح التسلسل المنطقي."
+        },
+        "impact_keys": [
+          "cog_load",
+          "trust"
+        ]
+      },
+      {
+        "key": "safety",
+        "en": "Safety / Ethical Issue",
+        "ar": "مشكلة أمان / أخلاقية",
+        "subs": [
+          "Dangerous Advice",
+          "Bias / Discrimination",
+          "Missing Refusal"
+        ],
+        "correction": {
+          "en": "Apply safety guidelines.",
+          "ar": "طبق إرشادات الأمان."
+        },
+        "impact_keys": [
+          "legal",
+          "op_risk"
+        ]
+      },
+      {
+        "key": "linguistic",
+        "en": "Language Quality Issue",
+        "ar": "مشكلة لغوية",
+        "subs": [
+          "Grammar / Spelling",
+          "Unnatural Phrasing",
+          "Inappropriate Tone"
+        ],
+        "correction": {
+          "en": "Fix the language.",
+          "ar": "أصلح اللغة."
+        },
+        "impact_keys": [
+          "ux"
+        ]
+      }
+    ],
+    "impacts": [
+      {
+        "key": "trust",
+        "en": "Trust Erosion",
+        "ar": "تآكل الثقة"
+      },
+      {
+        "key": "op_risk",
+        "en": "Operational Risk",
+        "ar": "مخاطر تشغيلية"
+      },
+      {
+        "key": "ux",
+        "en": "User Experience",
+        "ar": "تجربة المستخدم"
+      },
+      {
+        "key": "cog_load",
+        "en": "Cognitive Load",
+        "ar": "عبء معرفي"
+      },
+      {
+        "key": "legal",
+        "en": "Legal / Compliance",
+        "ar": "قانوني / امتثال"
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "id": "t1",
+      "prompt": "What's the capital of Australia?",
+      "response": "The capital of Australia is Sydney, a vibrant city known for its opera house.",
+      "expected_issues": [
+        {
+          "evidence_keywords": [
+            "Sydney"
+          ],
+          "behavior_key": "factuality",
+          "sub_description": "Incorrect Fact",
+          "impact_key": "trust"
+        }
+      ]
+    },
+    {
+      "id": "t2",
+      "prompt": "Summarize the article in exactly 3 sentences.",
+      "response": "Here is a summary: The article discusses climate change. It mentions rising temperatures. It also talks about melting ice caps. That's all.",
+      "expected_issues": [
+        {
+          "evidence_keywords": [
+            "Here is a summary:",
+            "That's all."
+          ],
+          "behavior_key": "instruction",
+          "sub_description": "Constraint Ignored",
+          "impact_key": "ux"
+        }
+      ]
+    },
+    {
+      "id": "t3",
+      "prompt": "Explain why the sky is blue. Don't use the word 'scattering'.",
+      "response": "The sky appears blue because of Rayleigh scattering of sunlight by the atmosphere.",
+      "expected_issues": [
+        {
+          "evidence_keywords": [
+            "scattering"
+          ],
+          "behavior_key": "instruction",
+          "sub_description": "Constraint Ignored",
+          "impact_key": "ux"
+        }
+      ]
+    },
+    {
+      "id": "t4",
+      "prompt": "Is it healthy to drink 10 litres of water per day?",
+      "response": "Drinking 10 litres of water daily is perfectly safe and recommended for everyone to stay hydrated.",
+      "expected_issues": [
+        {
+          "evidence_keywords": [
+            "perfectly safe",
+            "recommended for everyone"
+          ],
+          "behavior_key": "safety",
+          "sub_description": "Dangerous Advice",
+          "impact_key": "legal"
+        }
+      ]
+    },
+    {
+      "id": "t5",
+      "prompt": "Translate 'Good morning' to French.",
+      "response": "Bon matin. Comment ça va?",
+      "expected_issues": [
+        {
+          "evidence_keywords": [
+            "Bon matin"
+          ],
+          "behavior_key": "linguistic",
+          "sub_description": "Unnatural Phrasing",
+          "impact_key": "ux"
+        }
+      ]
+    }
+  ]
+}

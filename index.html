@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Evaluator â€“ Training &amp; Test Modes</title>
+    <title>AI Evaluator – Training &amp; Test Modes</title>
     <style>
         :root {
             --primary: #2563eb; --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
@@ -102,15 +102,15 @@
 
 <!-- INTRO SCREEN -->
 <div id="intro-screen" class="card" style="max-width:650px; margin:50px auto; text-align:center;">
-    <h1>ðŸŽ“ AI Evaluator</h1>
+    <h1>🎓 AI Evaluator</h1>
     <p>Choose mode and upload training JSON file.</p>
     <div class="flex-row" style="justify-content:center; margin:20px 0;">
-        <label><input type="radio" name="mode" value="training" checked> ðŸŽ“ Training mode</label>
-        <label><input type="radio" name="mode" value="test"> ðŸ“ Test mode</label>
+        <label><input type="radio" name="mode" value="training" checked> 🎓 Training mode</label>
+        <label><input type="radio" name="mode" value="test"> 📝 Test mode</label>
     </div>
     <input type="file" id="training-file" accept=".json" class="input-field" style="width:auto; display:inline-block; margin-top:20px;">
     <p style="margin-top:15px;">
-        <a href="#" id="download-sample-link">ðŸ“¥ Download sample (5 tasks with prompts)</a>
+        <a href="#" id="download-sample-link">📥 Download sample (5 tasks with prompts)</a>
     </p>
 </div>
 
@@ -118,22 +118,22 @@
 <div id="work-area" style="display:none;">
     <div class="header">
         <div class="flex-row">
-            <h1 id="mode-title">ðŸŽ“ Training</h1>
-            <span id="session-timer" class="timer-big">â³ 00:00</span>
+            <h1 id="mode-title">🎓 Training</h1>
+            <span id="session-timer" class="timer-big">⏳ 00:00</span>
             <span id="task-score-badge" class="score-badge" style="display:none;">Score: -</span>
         </div>
         <div class="flex-row">
             <select id="lang-switcher" class="input-field" style="width:auto;">
                 <option value="en">English</option>
-                <option value="ar">Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©</option>
+                <option value="ar">العربية</option>
             </select>
-            <button id="home-btn" class="btn" title="Return to start">ðŸ  Home</button>
-            <button id="history-btn" class="btn" title="Task history">ðŸ“‹ History</button>
-            <button id="prev-btn" class="btn">â—€</button>
+            <button id="home-btn" class="btn" title="Return to start">🏠 Home</button>
+            <button id="history-btn" class="btn" title="Task history">📋 History</button>
+            <button id="prev-btn" class="btn">◀</button>
             <span id="item-counter">0 / 0</span>
-            <button id="next-btn" class="btn">â–¶</button>
-            <button id="score-btn" class="btn btn-primary">ðŸ“Š Show Score</button>
-            <button id="export-txt-btn" class="btn btn-primary" style="display:none;">ðŸ“„ Export Text</button>
+            <button id="next-btn" class="btn">▶</button>
+            <button id="score-btn" class="btn btn-primary">📊 Show Score</button>
+            <button id="export-txt-btn" class="btn btn-primary" style="display:none;">📄 Export Text</button>
         </div>
     </div>
 
@@ -157,10 +157,10 @@
                 <h2 id="lbl-quiz">Issue Editor</h2>
                 <label style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
                     <input type="checkbox" id="custom-toggle">
-                    <span style="font-weight:bold;">ðŸ”“ Custom entries (no autoâ€‘scoring)</span>
+                    <span style="font-weight:bold;">🔓 Custom entries (no auto‑scoring)</span>
                 </label>
                 <div id="custom-warning" class="warning-banner" style="display:none;">
-                    âš ï¸ Custom mode: scoring disabled. You can export a text file for manual review.
+                    ⚠️ Custom mode: scoring disabled. You can export a text file for manual review.
                 </div>
                 <label id="lbl-evidence">Evidence:</label>
                 <textarea id="evidence-box" rows="2" readonly class="input-field"></textarea>
@@ -190,7 +190,7 @@
 <div id="score-modal" class="modal-overlay" style="display:none;">
     <div class="modal-content">
         <span style="float:right; cursor:pointer; font-size:1.5rem;" onclick="closeModal('score-modal')">&times;</span>
-        <h2 id="modal-title">ðŸ“Š Your Performance</h2>
+        <h2 id="modal-title">📊 Your Performance</h2>
         <div id="score-details"></div>
         <button class="btn btn-primary" onclick="closeModal('score-modal')">OK</button>
     </div>
@@ -200,7 +200,7 @@
 <div id="history-modal" class="modal-overlay" style="display:none;">
     <div class="modal-content" style="max-width:500px;">
         <span style="float:right; cursor:pointer; font-size:1.5rem;" onclick="closeModal('history-modal')">&times;</span>
-        <h2>ðŸ“‹ Task History</h2>
+        <h2>📋 Task History</h2>
         <div id="task-list-container"></div>
     </div>
 </div>
@@ -230,10 +230,10 @@
             rationaleHeader:"Your evaluation:"
         },
         ar: {
-            response:"Ù…Ø­ØªÙˆÙ‰ Ø§Ù„Ø§Ø³ØªØ¬Ø§Ø¨Ø©", quiz:"Ù…Ø­Ø±Ø± Ø§Ù„Ù…Ø´ÙƒÙ„Ø©", rationale:"Ù…Ø´Ø§ÙƒÙ„Ùƒ",
-            evidence:"Ø§Ù„Ø¯Ù„ÙŠÙ„:", behavior:"Ø§Ù„Ø³Ù„ÙˆÙƒ:", sub:"Ø§Ù„ÙˆØµÙ Ø§Ù„Ø¯Ù‚ÙŠÙ‚:",
-            impact:"Ø§Ù„Ø£Ø«Ø±:", add:"Ø£Ø¶Ù Ù…Ø´ÙƒÙ„Ø©", history:"Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ù…Ø´Ø§ÙƒÙ„",
-            rationaleHeader:"ØªÙ‚ÙŠÙŠÙ…Ùƒ:"
+            response:"محتوى الاستجابة", quiz:"محرر المشكلة", rationale:"مشاكلك",
+            evidence:"الدليل:", behavior:"السلوك:", sub:"الوصف الدقيق:",
+            impact:"الأثر:", add:"أضف مشكلة", history:"قائمة المشاكل",
+            rationaleHeader:"تقييمك:"
         }
     };
 
@@ -306,7 +306,7 @@
             document.querySelector(`input[name="mode"][value="${APP.mode}"]`).checked = true;
             $('intro-screen').style.display = 'none';
             $('work-area').style.display = 'block';
-            $('mode-title').textContent = APP.mode === 'training' ? 'ðŸŽ“ Training' : 'ðŸ“ Test';
+            $('mode-title').textContent = APP.mode === 'training' ? '🎓 Training' : '📝 Test';
             rebuildAllSelectors();
             loadCurrentTask();
             startSessionTimer();
@@ -331,7 +331,7 @@
             const div = document.createElement('div');
             div.className = 'task-list-item';
             const issuesCount = (APP.evaluations[idx]?.issues || []).length;
-            div.innerHTML = `<span>${idx+1}. ${task.id} (${issuesCount} issues)</span><span style="color:var(--primary);">â†’</span>`;
+            div.innerHTML = `<span>${idx+1}. ${task.id} (${issuesCount} issues)</span><span style="color:var(--primary);">→</span>`;
             div.addEventListener('click', () => {
                 closeModal('history-modal');
                 saveCurrent();
@@ -382,18 +382,18 @@
             config: {
                 session_time_limit_seconds: 900,
                 behaviors: [
-                    { key: "factuality", en: "Factuality Error", ar: "Ø®Ø·Ø£ ÙÙŠ Ø§Ù„Ù…Ø¹Ù„ÙˆÙ…Ø©", subs: ["Incorrect Fact","Outdated Information","Hallucination"], correction:{"en":"Correct the fact.","ar":"ØµØ­Ø­ Ø§Ù„Ù…Ø¹Ù„ÙˆÙ…Ø©."}, impact_keys:["trust","op_risk"] },
-                    { key: "instruction", en: "Instruction Violation", ar: "Ù…Ø®Ø§Ù„ÙØ© Ø§Ù„ØªØ¹Ù„ÙŠÙ…Ø§Øª", subs: ["Constraint Ignored","Format Not Respected","Missing Element"], correction:{"en":"Follow the user's instructions exactly.","ar":"Ø§ØªØ¨Ø¹ ØªØ¹Ù„ÙŠÙ…Ø§Øª Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…."}, impact_keys:["ux","trust"] },
-                    { key: "logic", en: "Logic / Coherence Issue", ar: "Ø®Ù„Ù„ Ù…Ù†Ø·Ù‚ÙŠ", subs: ["Internal Contradiction","Non-sequitur","Circular Reasoning"], correction:{"en":"Fix the logical flow.","ar":"Ø£ØµÙ„Ø­ Ø§Ù„ØªØ³Ù„Ø³Ù„ Ø§Ù„Ù…Ù†Ø·Ù‚ÙŠ."}, impact_keys:["cog_load","trust"] },
-                    { key: "safety", en: "Safety / Ethical Issue", ar: "Ù…Ø´ÙƒÙ„Ø© Ø£Ù…Ø§Ù† / Ø£Ø®Ù„Ø§Ù‚ÙŠØ©", subs: ["Dangerous Advice","Bias / Discrimination","Missing Refusal"], correction:{"en":"Apply safety guidelines.","ar":"Ø·Ø¨Ù‚ Ø¥Ø±Ø´Ø§Ø¯Ø§Øª Ø§Ù„Ø£Ù…Ø§Ù†."}, impact_keys:["legal","op_risk"] },
-                    { key: "linguistic", en: "Language Quality Issue", ar: "Ù…Ø´ÙƒÙ„Ø© Ù„ØºÙˆÙŠØ©", subs: ["Grammar / Spelling","Unnatural Phrasing","Inappropriate Tone"], correction:{"en":"Fix the language.","ar":"Ø£ØµÙ„Ø­ Ø§Ù„Ù„ØºØ©."}, impact_keys:["ux"] }
+                    { key: "factuality", en: "Factuality Error", ar: "خطأ في المعلومة", subs: ["Incorrect Fact","Outdated Information","Hallucination"], correction:{"en":"Correct the fact.","ar":"صحح المعلومة."}, impact_keys:["trust","op_risk"] },
+                    { key: "instruction", en: "Instruction Violation", ar: "مخالفة التعليمات", subs: ["Constraint Ignored","Format Not Respected","Missing Element"], correction:{"en":"Follow the user's instructions exactly.","ar":"اتبع تعليمات المستخدم."}, impact_keys:["ux","trust"] },
+                    { key: "logic", en: "Logic / Coherence Issue", ar: "خلل منطقي", subs: ["Internal Contradiction","Non-sequitur","Circular Reasoning"], correction:{"en":"Fix the logical flow.","ar":"أصلح التسلسل المنطقي."}, impact_keys:["cog_load","trust"] },
+                    { key: "safety", en: "Safety / Ethical Issue", ar: "مشكلة أمان / أخلاقية", subs: ["Dangerous Advice","Bias / Discrimination","Missing Refusal"], correction:{"en":"Apply safety guidelines.","ar":"طبق إرشادات الأمان."}, impact_keys:["legal","op_risk"] },
+                    { key: "linguistic", en: "Language Quality Issue", ar: "مشكلة لغوية", subs: ["Grammar / Spelling","Unnatural Phrasing","Inappropriate Tone"], correction:{"en":"Fix the language.","ar":"أصلح اللغة."}, impact_keys:["ux"] }
                 ],
                 impacts: [
-                    { key:"trust", en:"Trust Erosion", ar:"ØªØ¢ÙƒÙ„ Ø§Ù„Ø«Ù‚Ø©" },
-                    { key:"op_risk", en:"Operational Risk", ar:"Ù…Ø®Ø§Ø·Ø± ØªØ´ØºÙŠÙ„ÙŠØ©" },
-                    { key:"ux", en:"User Experience", ar:"ØªØ¬Ø±Ø¨Ø© Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…" },
-                    { key:"cog_load", en:"Cognitive Load", ar:"Ø¹Ø¨Ø¡ Ù…Ø¹Ø±ÙÙŠ" },
-                    { key:"legal", en:"Legal / Compliance", ar:"Ù‚Ø§Ù†ÙˆÙ†ÙŠ / Ø§Ù…ØªØ«Ø§Ù„" }
+                    { key:"trust", en:"Trust Erosion", ar:"تآكل الثقة" },
+                    { key:"op_risk", en:"Operational Risk", ar:"مخاطر تشغيلية" },
+                    { key:"ux", en:"User Experience", ar:"تجربة المستخدم" },
+                    { key:"cog_load", en:"Cognitive Load", ar:"عبء معرفي" },
+                    { key:"legal", en:"Legal / Compliance", ar:"قانوني / امتثال" }
                 ]
             },
             tasks: [
@@ -401,7 +401,7 @@
                 { id:"t2", prompt:"Summarize the article in exactly 3 sentences.", response:"Here is a summary: The article discusses climate change. It mentions rising temperatures. It also talks about melting ice caps. That's all.", expected_issues:[{ evidence_keywords:["Here is a summary:","That's all."], behavior_key:"instruction", sub_description:"Constraint Ignored", impact_key:"ux" }] },
                 { id:"t3", prompt:"Explain why the sky is blue. Don't use the word 'scattering'.", response:"The sky appears blue because of Rayleigh scattering of sunlight by the atmosphere.", expected_issues:[{ evidence_keywords:["scattering"], behavior_key:"instruction", sub_description:"Constraint Ignored", impact_key:"ux" }] },
                 { id:"t4", prompt:"Is it healthy to drink 10 litres of water per day?", response:"Drinking 10 litres of water daily is perfectly safe and recommended for everyone to stay hydrated.", expected_issues:[{ evidence_keywords:["perfectly safe","recommended for everyone"], behavior_key:"safety", sub_description:"Dangerous Advice", impact_key:"legal" }] },
-                { id:"t5", prompt:"Translate 'Good morning' to French.", response:"Bon matin. Comment Ã§a va?", expected_issues:[{ evidence_keywords:["Bon matin"], behavior_key:"linguistic", sub_description:"Unnatural Phrasing", impact_key:"ux" }] }
+                { id:"t5", prompt:"Translate 'Good morning' to French.", response:"Bon matin. Comment ça va?", expected_issues:[{ evidence_keywords:["Bon matin"], behavior_key:"linguistic", sub_description:"Unnatural Phrasing", impact_key:"ux" }] }
             ]
         };
         const blob = new Blob([JSON.stringify(sample, null, 2)], { type: 'application/json' });
@@ -440,7 +440,7 @@
                 toggleCustom();
                 $('intro-screen').style.display = 'none';
                 $('work-area').style.display = 'block';
-                $('mode-title').textContent = APP.mode === 'training' ? 'ðŸŽ“ Training' : 'ðŸ“ Test';
+                $('mode-title').textContent = APP.mode === 'training' ? '🎓 Training' : '📝 Test';
                 rebuildAllSelectors();
                 loadCurrentTask();
                 startSessionTimer();
@@ -469,7 +469,7 @@
                 clearInterval(APP.timerInterval);
                 APP.locked = true;
                 $('add-issue-btn').disabled = true;
-                alert('â° Time is up!');
+                alert('⏰ Time is up!');
                 saveState();
             }
         }, 1000);
@@ -478,7 +478,7 @@
     function updateTimerDisplay() {
         const m = Math.floor(Math.max(0, APP.timeRemaining) / 60);
         const s = Math.max(0, APP.timeRemaining) % 60;
-        $('session-timer').textContent = `â³ ${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        $('session-timer').textContent = `⏳ ${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
 
     // ==================== UI BUILD ====================
@@ -591,7 +591,7 @@
         const promptArea = $('prompt-area');
         if (task.prompt) {
             promptArea.style.display = 'block';
-            promptArea.textContent = 'ðŸ›ˆ Prompt: ' + task.prompt;
+            promptArea.textContent = '🛈 Prompt: ' + task.prompt;
         } else {
             promptArea.style.display = 'none';
         }
@@ -690,11 +690,11 @@
         const lang = APP.lang;
         let txt = i18n[lang].rationaleHeader + '\n\n';
         APP.currentIssues.forEach((iss, i) => {
-            txt += `${i+1}. [${iss.evidence}] â†’ ${iss.behaviorName || iss.behaviorKey} (${iss.subDesc}), impact: ${iss.impactText || iss.impactKey}.\n`;
+            txt += `${i+1}. [${iss.evidence}] → ${iss.behaviorName || iss.behaviorKey} (${iss.subDesc}), impact: ${iss.impactText || iss.impactKey}.\n`;
             const tag = document.createElement('span'); tag.className = 'issue-tag';
             tag.appendChild(document.createTextNode(`${iss.behaviorName || iss.behaviorKey} `));
             const actions = document.createElement('span'); actions.className = 'issue-actions';
-            const delBtn = document.createElement('button'); delBtn.textContent = 'Ã—';
+            const delBtn = document.createElement('button'); delBtn.textContent = '×';
             delBtn.onclick = () => removeIssue(i);
             actions.appendChild(delBtn);
             tag.appendChild(actions);
@@ -757,9 +757,9 @@
             p.innerHTML = `<h3>Overall Score: ${overall}%</h3>`;
             detailsDiv.appendChild(p);
             let message = '';
-            if (overall === 100) message = 'ðŸ† Perfect!';
-            else if (overall >= 80) message = 'âœ… Great job!';
-            else message = 'ðŸ’ª Keep practicing!';
+            if (overall === 100) message = '🏆 Perfect!';
+            else if (overall >= 80) message = '✅ Great job!';
+            else message = '💪 Keep practicing!';
             const msgP = document.createElement('p');
             msgP.style.fontSize = '1.2rem';
             msgP.textContent = message;
@@ -797,7 +797,7 @@
                     const exp = expected[pair.expIdx];
                     const ad = added[pair.addedIdx];
                     table += `<tr>
-                        <td class="matched">âœ” Matched (${Math.round(pair.score * 100)}%)</td>
+                        <td class="matched">✔ Matched (${Math.round(pair.score * 100)}%)</td>
                         <td>Evidence: ${exp.evidence_keywords.join(', ')}<br>Behavior: ${getBehaviors()[exp.behavior_key]?.[APP.lang] || exp.behavior_key}<br>Sub: ${exp.sub_description}<br>Impact: ${getImpacts()[exp.impact_key]?.[APP.lang] || exp.impact_key}</td>
                         <td>Evidence: ${ad.evidence}<br>Behavior: ${ad.behaviorName || ad.behaviorKey}<br>Sub: ${ad.subDesc}<br>Impact: ${ad.impactText || ad.impactKey}</td>
                     </tr>`;
@@ -806,9 +806,9 @@
                 expected.forEach((exp, ei) => {
                     if (!matchedExpected[ei]) {
                         table += `<tr>
-                            <td class="unmatched">âœ˜ Missed</td>
+                            <td class="unmatched">✘ Missed</td>
                             <td>Evidence: ${exp.evidence_keywords.join(', ')}<br>Behavior: ${getBehaviors()[exp.behavior_key]?.[APP.lang] || exp.behavior_key}<br>Sub: ${exp.sub_description}<br>Impact: ${getImpacts()[exp.impact_key]?.[APP.lang] || exp.impact_key}</td>
-                            <td>â€”</td>
+                            <td>—</td>
                         </tr>`;
                     }
                 });
@@ -816,8 +816,8 @@
                 added.forEach((ad, aj) => {
                     if (!matchedAdded[aj]) {
                         table += `<tr class="extra-issue">
-                            <td>âš ï¸ Extra</td>
-                            <td>â€”</td>
+                            <td>⚠️ Extra</td>
+                            <td>—</td>
                             <td>Evidence: ${ad.evidence}<br>Behavior: ${ad.behaviorName || ad.behaviorKey}<br>Sub: ${ad.subDesc}<br>Impact: ${ad.impactText || ad.impactKey}</td>
                         </tr>`;
                     }
@@ -837,7 +837,7 @@
             detailsDiv.appendChild(scoreP);
         }
 
-        $('modal-title').textContent = APP.mode === 'training' ? 'ðŸ“Š Training Review' : 'ðŸ“ Test Result';
+        $('modal-title').textContent = APP.mode === 'training' ? '📊 Training Review' : '📝 Test Result';
         $(modalId).style.display = 'flex';
     }
 
@@ -856,7 +856,7 @@
     // ==================== EXPORT TEXT ====================
     function exportText() {
         saveCurrent();
-        let text = 'AI Evaluator â€“ Manual Review Output\n\n';
+        let text = 'AI Evaluator – Manual Review Output\n\n';
         APP.tasks.forEach((task, idx) => {
             text += `Task ${idx+1} (${task.id})\n`;
             if (task.prompt) text += `Prompt: ${task.prompt}\n`;

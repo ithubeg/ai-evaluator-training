@@ -1,7 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "// wrangler.jsonc
-"name": "accurater",
+  "name": "accurater",
   "compatibility_date": "2026-05-06",
   "observability": {
     "enabled": true

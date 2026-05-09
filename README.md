@@ -54,7 +54,7 @@ It is the **open‑source training companion** of a professional secure evaluati
 
 ## ✦ Where to get it?
 
-- **Live demo (free):** [https://accurater.advertcore.worker.dev](https://accurater.advertcore.worker.dev) (hosted on Cloudflare Pages)
+- **Live demo (free):** [https://accurater.advertcore.workers.dev](https://accurater.advertcore.workers.dev) (hosted on Cloudflare Pages)
 - **Source code:** [https://github.com/ithubeg/accurater-ai-evaluator-training](https://github.com/ithubeg/accurater-ai-evaluator-training)
 - **Sample training pack:** Download directly from the demo page.
 

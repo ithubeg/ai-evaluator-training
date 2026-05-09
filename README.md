@@ -1,7 +1,7 @@
 # 🎓AccuRater AI Evaluator – Training Edition
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20095507.svg)](https://doi.org/10.5281/zenodo.20095507)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Live Demo](https://img.shields.io/badge/demo-live-blue)]([https://your-project.pages.dev](https://ai-evaluator-training.advertcore.workers.dev/))
+[![Live Demo](https://img.shields.io/badge/demo-live-blue)]([[[[https://your-project.pages.dev](https://ai-evaluator-training.advertcore.workers.dev)](https://ai-evaluator-training.advertcore.workers.dev)](https://ai-evaluator-training.advertcore.workers.dev)](https://ai-evaluator-training.advertcore.workers.dev/))
 
 Made with ❤️ by **Mohamed Ali Maher** – let’s connect on [LinkedIn]([https://google.com](https://www.linkedin.com/in/mohamed-ali-maher/)).
 

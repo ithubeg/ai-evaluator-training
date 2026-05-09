@@ -3,13 +3,11 @@ Made with ❤️ by **Mohamed Ali Maher** – let’s connect on [LinkedIn]([htt
 
 **Train yourself to evaluate AI responses like a professional.**
 
-
-
-![enter image description here](https://raw.githubusercontent.com/ithubeg/ai-evaluator-training/refs/heads/main/AccuRater-logo.png)
-
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20095507.svg)](https://doi.org/10.5281/zenodo.20095507)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Live Demo](https://img.shields.io/badge/demo-live-blue)]([https://your-project.pages.dev](https://ai-evaluator-training.advertcore.workers.dev/))
+
+![enter image description here](https://raw.githubusercontent.com/ithubeg/ai-evaluator-training/refs/heads/main/AccuRater-logo.png)
 
 A free, browser‑based tool that helps you practice the structured evaluation of AI‑generated text.  
 Learn to identify factuality errors, instruction violations, logical flaws, safety issues and linguistic mistakes – the way high‑end AI companies do.
